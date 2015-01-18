@@ -55,3 +55,6 @@ class Merge(object):
             'RheumatoidArthritis' : ['rheumatoid', 'ra', 'rheumatoidarthritis'],
             'Endometriosis' : ['endometriosis', 'endo']
         }
+
+if __name__ == '__main__':
+    pass

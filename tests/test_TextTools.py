@@ -1,6 +1,7 @@
 import unittest
 
 from TextTools import *
+import nltk
 
 class TweetTextWordBagMakerTest(unittest.TestCase):
     def setUp(self):
@@ -55,11 +56,6 @@ class TweetTextWordBagMakerTest(unittest.TestCase):
         result = self.object._filter_urls(test)
         self.assertListEqual(result, expect)
     
-    def test__filter_stopwords(self):
-        test = ['taco', 'a', 'cat', 'the']
-        expect = ['taco', 'cat']
-        result = self.object._filter_stopwords(test)
-        self.assertListEqual(result, expect)
  
     def test_process(self):
         test = [{'tweetID' : 1, 'tweetText' : "The first tweet. It has text"},
@@ -67,6 +63,7 @@ class TweetTextWordBagMakerTest(unittest.TestCase):
         expect = ["first", "tweet", "text", "quick", "brown", "fox", "became", "delicious", "taco", "hungry", "cat",
                   "lived", "happily", "ever"]
         self.object.add_to_ignorelist([".", ","])
+        self.object.add_to_ignorelist(nltk.corpus.stopwords.words('english'))
         self.object.process(test)
         self.assertEqual(self.object.masterbag, expect)
         self.assertTupleEqual(self.object.tweet_tuples[0], (1, ["first", "tweet", "text"]))
@@ -89,5 +86,11 @@ class WordFiltersTest(unittest.TestCase):
         test = ['cat', 'dog', "&", '.', '/', "'", "!", 'fish', "#", 'cow']
         expect = ['cat', 'dog', 'fish', 'cow']
         result = self.object.remove_punctuation(test)
+        self.assertListEqual(result, expect)
+    
+    def test_filter_stopwords(self):
+        test = ['taco', 'a', 'cat', 'the']
+        expect = ['taco', 'cat']
+        result = self.object.filter_stopwords(test)
         self.assertListEqual(result, expect)
         

@@ -56,3 +56,6 @@ def load(date, graphname, path='charts_and_graphs'):
     Loads saved graphs
     """
     return nx.read_gexf('%s/%s_%s.gexf' % (path, date, graphname))
+
+if __name__ == '__main__':
+    pass

@@ -1,17 +1,7 @@
+"""
+Tools for editing and reshaping graphs
+"""
 
-
-def sorted_degree_map(degree_map):
-    """
-    Function which sorts hashtags by their degrees
-    
-    Args:
-        degree_map:
-    
-    Returns:
-        Sorted mapping
-    """
-    ms = sorted(degree_map.iteritems(), key=lambda (k,v):(-v,k))
-    return ms
 
 def prune_below_degree(graph, minimum_degree=1):
     """
@@ -41,7 +31,7 @@ def remove_irrelevant_terms(graph, irrelevant_terms):
     Returns:
         Pruned graph
     """
-    graph.remove_notes_from(irrelevant_terms)
+    graph.remove_nodes_from(irrelevant_terms)
     #for k in ignore.keys():
         #graph.remove_nodes_from(ignore[k])
     return graph
@@ -81,3 +71,6 @@ def merge_from_list(graph, merge_dict):
     for k in merge_dict.keys():
         graph = merge_nodes(graph, merge_dict[k], k)
     return graph
+
+if __name__ == '__main__':
+    pass

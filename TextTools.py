@@ -7,6 +7,8 @@ import time
 from ConstantsAndUtilities import Ignore
 import string
 
+from OptimizationTools import *
+
 class ProcessingError(Exception):
     def __init__(self, identifier):
         self.identifier = identifier
@@ -32,6 +34,7 @@ class TweetTextWordBagMaker(object):
     
     Before running the process command, all lists of strings to ignore should be loaded using add_to_ignorelist()
     
+    
     Attributes:
         masterbag: List containing all words
         ignore: Tuple of strings to ignore through filtering
@@ -55,19 +58,44 @@ class TweetTextWordBagMaker(object):
         self.ignore = tuple(self.ignore)
     
     def process(self, list_of_dicts):
+        """
+        Processes the tweet texts
+        Most recent execution time 599.286342144 sec for 732683 tweets
+        Moved stopwords filtration first: 891.928412914 for 732683 tweets
+        Merged stopwords into ignore list: 234.204810858 
+        1 loops, best of 3: 14min 56s per loop
+        TODO: Change order of execution for optimization
+        
+        Args:
+            list_of_dicts: List of dictionaries with keys tweetID and tweetText
+        """
         for t in list_of_dicts:
             tweetid = t['tweetID']
             #process text
             words = self._make_wordbag(t['tweetText'])
+            #words = self._filter_stopwords(words)
             words = self._filter_ignored_terms(words)
             words = self._filter_usernames(words)
             words = self._filter_urls(words)
-            words = self._filter_stopwords(words)
             #process tuple
             tweet_tuple = (tweetid, words)
             self.tweet_tuples.append(tweet_tuple)
             self.masterbag += words
-            
+    
+    def new_process(self, list_of_dicts):
+        """
+        Best time 225.85651803
+        """
+        for t in list_of_dicts:
+            tweetid = t['tweetID']
+            #process text
+            words = self._make_wordbag(t['tweetText'])
+            words = [w for w in words if self._check_unwanted(w) and w not in self.ignore ]
+            #process tuple
+            tweet_tuple = (tweetid, words)
+            self.tweet_tuples.append(tweet_tuple)
+            self.masterbag += words
+    
     def OLDprocess(self, list_of_dicts):  
         for t in list(self.results):
             tweetid = t['tweetID']
@@ -115,6 +143,12 @@ class TweetTextWordBagMaker(object):
         words = [w for w in wordlist if w not in self.ignore]
         return words
     
+    def _check_unwanted(self, word):
+        if word[0] != '@' and word[0:6] != '//t.co':
+            return True
+        else:
+            return False
+    
     def _filter_usernames(self, wordlist):
         """
         Gets rid of usernames by recognizing the @
@@ -138,18 +172,7 @@ class TweetTextWordBagMaker(object):
         words = [w for w in wordlist if w[0:6] != '//t.co']
         return words
     
-    def _filter_stopwords(self, wordlist):
-        """
-        Uses NLTK English stopwords corpus to remove stopwords
-        
-        Args:
-            wordlist: List of strings to be filtered
-            
-        Returns:
-            Filtered list
-        """
-        words = [w for w in wordlist if w not in nltk.corpus.stopwords.words('english')]
-        return words
+
 
 class WordFilters(object):
     """
@@ -184,3 +207,20 @@ class WordFilters(object):
         """
         wordlist = [w for w in wordlist if w not in string.punctuation]#remove punctuation
         return wordlist
+    
+    @staticmethod
+    def filter_stopwords(wordlist):
+        """
+        Uses NLTK English stopwords corpus to remove stopwords.
+        
+        Args:
+            wordlist: List of strings to be filtered
+            
+        Returns:
+            Filtered list
+        """
+        words = [w for w in wordlist if w not in nltk.corpus.stopwords.words('english')]
+        return words
+
+if __name__ == '__main__':
+    pass
