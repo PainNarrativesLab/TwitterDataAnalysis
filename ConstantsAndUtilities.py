@@ -1,5 +1,6 @@
 import string
 
+
 class Ignore(object):
     """
     This contains all the terms to be ignored from hashtags etc. It is inherited by other classes which do cleaning
@@ -19,7 +20,8 @@ class Ignore(object):
                           'instadaily', 'picoftheday', 'photo', 'instapic', 'http', 'rt', 'mt'],
     'irrelevant' : ['recordstoreday', 'vinyl', 'naruto', 'bread' ]
     }
-    
+
+    @staticmethod
     def iterable(self):
         """
         Iterable object for all the contents of the ignore list
@@ -28,7 +30,8 @@ class Ignore(object):
         wordlist = []
         [wordlist.append(w) for w in wl for wl in words.values()]
         return wordlist
-    
+
+    @staticmethod
     def get_list(self):
         """
         Returns a list of everything to ignore

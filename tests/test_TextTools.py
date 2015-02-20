@@ -1,7 +1,8 @@
 import unittest
 
-from TextTools import *
 import nltk
+
+from TextAnalysis.TextTools import *
 
 class TweetTextWordBagMakerTest(unittest.TestCase):
     def setUp(self):
