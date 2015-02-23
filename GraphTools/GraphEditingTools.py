@@ -2,6 +2,8 @@
 Tools for editing and reshaping graphs
 """
 
+import networkx as nx
+
 
 def prune_below_degree(graph, minimum_degree=1):
     """
@@ -17,8 +19,9 @@ def prune_below_degree(graph, minimum_degree=1):
     g2 = graph.copy()
     d = nx.degree(g2)
     for n in g2.nodes():
-        if d[n]<= minimum_degree: g2.remove_node(n)
+        if d[n] <= minimum_degree: g2.remove_node(n)
     return g2
+
 
 def remove_irrelevant_terms(graph, irrelevant_terms):
     """
@@ -26,15 +29,14 @@ def remove_irrelevant_terms(graph, irrelevant_terms):
     
     Args:
         graph: Networkx object
-        irrelevant_terms: Iterable giving irrelevant terms. Usually Ignore.iterable
+        irrelevant_terms: Iterable giving irrelevant terms. Usually ConstantsAndUtilities.Ignore.iterable
     
     Returns:
         Pruned graph
     """
     graph.remove_nodes_from(irrelevant_terms)
-    #for k in ignore.keys():
-        #graph.remove_nodes_from(ignore[k])
     return graph
+
 
 def merge_nodes(graph, nodes, new_node, attr_dict=None, **attr):
     """
@@ -56,6 +58,7 @@ def merge_nodes(graph, nodes, new_node, attr_dict=None, **attr):
     for n in nodes: # remove the merged nodes
         G.remove_node(n)
     return G
+
 
 def merge_from_list(graph, merge_dict):
     """

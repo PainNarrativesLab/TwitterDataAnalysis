@@ -1,5 +1,7 @@
 """
 This contains classes for loading tweet data
+
+THIS SHOULD INSTEAD USE THE DAO IN TwitterMining
 """
 
 import DAO
@@ -11,15 +13,12 @@ class TwitterSQLDAO(DAO.BaseDAO):
     """
 
     def __init__(self, test=False, local=True):
-        if test == False:
-            pass
-
-        if test == False:
+        if test is False:
             databaseName = 'twitter_data'
         else:
             databaseName = 'twitter_dataTEST'
         DAO.BaseDAO.__init__(self)
-        if local == False:
+        if local is False:
             self.connectRemote(databaseName)
         else:
             self.connect(databaseName)

@@ -21,6 +21,14 @@ class Ignore(object):
     'irrelevant' : ['recordstoreday', 'vinyl', 'naruto', 'bread' ]
     }
 
+    def __init__(self):
+        self.words = Ignore.words
+        wordlist = []
+        [wordlist.append(word) for k in Ignore.words.keys() for word in Ignore.words[k]]
+        # [wordlist.append(w) for w in wl for wl in self.words.values()]
+        self.wordtuple = tuple(wordlist)
+
+
     @staticmethod
     def iterable(self):
         """
@@ -28,8 +36,18 @@ class Ignore(object):
         TODO Make a generator 
         """
         wordlist = []
-        [wordlist.append(w) for w in wl for wl in words.values()]
+        [wordlist.append(word) for k in words.keys() for word in words[k]]
+        # [wordlist.append(w) for w in wl for wl in Ignore.words.values()]
         return wordlist
+
+    def generator(self):
+        """
+        Generator which returns ignore words
+        """
+        pass
+        # (word for word in self.wordtuple)
+        #     yield word
+
 
     @staticmethod
     def get_list(self):

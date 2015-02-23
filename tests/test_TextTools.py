@@ -70,6 +70,7 @@ class TweetTextWordBagMakerTest(unittest.TestCase):
         self.assertTupleEqual(self.object.tweet_tuples[0], (1, ["first", "tweet", "text"]))
         self.assertTupleEqual(self.object.tweet_tuples[1], (2, ["quick", "brown", "fox", "became", "delicious", "taco", "hungry", "cat", "lived", "happily", "ever"]))
 
+
 class WordFiltersTest(unittest.TestCase):
     def setUp(self):
         self.object = WordFilters()
@@ -94,4 +95,3 @@ class WordFiltersTest(unittest.TestCase):
         expect = ['taco', 'cat']
         result = self.object.filter_stopwords(test)
         self.assertListEqual(result, expect)
-        
