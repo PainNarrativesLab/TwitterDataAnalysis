@@ -10,15 +10,18 @@ class Ignore(object):
         fragments: String fragments which should be filterd out
     """
     fragments = ["'s", "amp", '...', '//t.co', "'re'", "'m"]
-    punctuation = string.punctuation
+    punctuation = ['.', ',', '--', '?', ')', '(', ':', '\'', '"', '""', '-', '}', '{',
+                             '://', '/"', '\xc2\xb2', '...', '???', '..']
+    [punctuation.append(x) for x in string.punctuation]
+
     words = {
     'placenames' : ['tn', 'nashville', 'memphis', 'tennessee', 'knoxville', 'fl', 'tx', 'sc', 'nc', 'co', 
                     'nyc', 'va', 'ga', 'twittoma', 'team243'],
     'smallwords' : ['no', 'be', 'my', 'the',  'like', 'in', 'i', 'a', 'you', 'is', 'of', 'and', 'it', 'to',
                     'this', 'so', 'for', 'on', 'up'], 
-    'socialmediaterms' : ['hashtag', 'selfie', 'repost', 'nofilter', 'instagram', 'instamood', 'instalike',
+    'socialmediaterms': ['hashtag', 'selfie', 'repost', 'nofilter', 'instagram', 'instamood', 'instalike',
                           'instadaily', 'picoftheday', 'photo', 'instapic', 'http', 'rt', 'mt'],
-    'irrelevant' : ['recordstoreday', 'vinyl', 'naruto', 'bread' ]
+    'irrelevant': ['recordstoreday', 'vinyl', 'naruto', 'bread' ]
     }
 
     def __init__(self):
@@ -56,8 +59,11 @@ class Ignore(object):
         """
         wordlist = []
         [wordlist.append(w) for wl in self.words.values() for w in wl]
-        wordlist += self.fragments
-        wordlist += self.punctuation
+        #words = [w for w in words if w[0] != '@']  #Get rid of usernames
+    #         words = [w for w in words if w[0:6] != '//t.co']  #Remove some urls
+
+        wordlist += Ignore.fragments
+        wordlist += Ignore.punctuation
         return wordlist
     
     
