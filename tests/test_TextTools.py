@@ -17,7 +17,6 @@ from TextAnalysis.TextTools import *
 class URLCleanerTest(unittest.TestCase):
     """
     Removes some urls
-    TODO: Make this better
     """
     def setUp(self):
         self.object = URLCleaner()
@@ -43,7 +42,7 @@ class NumeralCleanerTest(unittest.TestCase):
         self.object = NumeralCleaner()
 
     def test_clean(self):
-        test = [('taco', True), (1, False), ('cat', True), ('3', False)]
+        test = [('taco', True), (1, False), ('cat', True), ('3', False), (['taco'], False)]
         for t in test:
             self.assertEquals(self.object.clean(t[0]), t[1])
 
@@ -71,6 +70,46 @@ class PorterStemmerTest(unittest.TestCase):
 
     def test_process_excepts_if_not_string(self):
         self.assertRaises(AssertionError, self.object.process(4))
+
+
+class WordBagMakerTest(unittest.TestCase):
+    def setUp(self):
+        self.object = WordBagMaker()
+
+    def tearDown(self):
+        self.object = ''
+
+    def test_add_to_ignorelist(self):
+        """
+        The tested function combines the lists, removes duplicates, and converts to a tuple
+        """
+        testlist1 = [1, 2]
+        testlist2 = [2, 3, 4, 5]
+        expect = (1, 2, 3, 4, 5)
+
+        self.object.add_to_ignorelist(testlist1)
+        # make sure adds to the list
+        # t1 = list(self.object.ignore).sort()
+        # self.assertListEqual(t1, testlist1.sort())
+        self.object.add_to_ignorelist(testlist2)
+        # make sure edited out the duplicates
+        self.assertTupleEqual(self.object._ignore, expect)
+
+    def test__make_wordbag(self):
+        test = "The quick brown fox became a delicious taco for the hungry cat. All lived happily ever after"
+        expect = ["the", "quick",  "brown", "fox", "became", "a", "delicious", "taco", "for", "the", "hungry", "cat", ".", "all", "lived", "happily", "ever", "after"]
+        result = self.object._make_wordbag(test)
+        self.assertListEqual(result, expect)
+
+    def test_process(self):
+        test = ["The first tweet.",  "It has text", "The quick brown fox became a delicious taco for the hungry cat.",
+                "All lived happily ever after"]
+        expect = ["first", "tweet", "text", "quick", "brown", "fox", "became", "delicious", "taco", "hungry", "cat",
+                  "lived", "happily", "ever"]
+        self.object.add_to_ignorelist([".", ","])
+        self.object.add_to_ignorelist(nltk.corpus.stopwords.words('english'))
+        self.object.process(test)
+        self.assertEqual(self.object.masterbag, expect)
 
 
 class TweetTextWordBagMakerTest(unittest.TestCase):
@@ -159,3 +198,26 @@ class TextFiltersTest(unittest.TestCase):
         expect = ['taco', 'cat']
         result = self.object.filter_stopwords(test)
         self.assertListEqual(result, expect)
+
+
+class WordFiltersTest(unittest.TestCase):
+    def setUp(self):
+        self.expected = ('cat', 'fish', 'taco', 'dog')
+        self.object = WordFilter()
+
+    def test_filter_words_tuple_case(self):
+        self.object.filter_words = ('cat', 'fish')
+        self.object.filter_words = ('taco', 'dog')
+        self.assertTupleEqual(self.object._filter_words, self.expected)
+
+    def test_filter_words_list_case(self):
+        self.object.filter_words = ['cat', 'fish']
+        self.object.filter_words = ['taco', 'dog']
+        self.assertTupleEqual(self.object._filter_words, self.expected)
+
+    def test_filter_words_list_case(self):
+        self.object.filter_words = 'cat'
+        self.object.filter_words = 'fish'
+        self.object.filter_words = 'taco'
+        self.object.filter_words = 'dog'
+        self.assertTupleEqual(self.object._filter_words, self.expected)

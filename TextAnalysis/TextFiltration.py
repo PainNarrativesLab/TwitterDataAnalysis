@@ -11,7 +11,7 @@ from replacers import RegexpReplacer
 """
 
 
-move this stuff to texttools
+TODO : move this stuff to texttools
 
 
 This contains classes used for filtering words, sentences, ngrams, etc to be used in statistical analysis

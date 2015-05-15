@@ -4,7 +4,7 @@ This contains classes which calculate statistical properties of processed text
 import nltk
 
 
-class Stats:
+class Stats(object):
     def __init__(self, data):
         """
         Args:

@@ -2,6 +2,10 @@ __author__ = 'adam'
 
 
 class ProcessingError(Exception):
+    """
+    Base exception class for text and tweet processing
+    TODO: Add logging library
+    """
     def __init__(self, identifier):
         self.identifier = identifier
 
@@ -21,3 +25,15 @@ class StringProcessingError(ProcessingError):
         self.kind = 'StringProcessing'
         self.identifier_type = 'String content'
         ProcessingError.__init__(self, string_processed)
+
+
+class NgramError(ProcessingError):
+    def __init__(self, processing_step):
+        """
+        Arguments:
+            :param processing_step: String description of where error arose
+        :return:
+        """
+        self.kind = 'NgramProcessing'
+        self.identifier_type = 'String content'
+        ProcessingError.__init__(self, processing_step)
