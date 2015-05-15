@@ -16,4 +16,4 @@ def timefn(fn):
         result = fn(*args, **kwargs)
         t2 = time.time()
         elapsed = str(t2 - t1)
-        print("@timefn:%s took %s seconds" % (fn.func_name, elapsed))
+        print(("@timefn:%s took %s seconds" % (fn.__name__, elapsed)))
