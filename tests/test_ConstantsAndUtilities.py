@@ -20,7 +20,7 @@ class IgnoreTest(unittest.TestCase):
 
     def test_generator(self):
         result = self.object.generator()
-        for i in xrange(0, len(self.object.word_tuple)):
+        for i in range(0, len(self.object.word_tuple)):
             self.assertEqual(self.object.word_tuple[i], next(result))
 
     def test_get_list(self):
