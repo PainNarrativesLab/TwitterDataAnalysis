@@ -24,7 +24,7 @@ class URLCleanerTest(unittest.TestCase):
     def test_clean(self):
         test = [('taco', True), ('//t.co', False), ('cat', True), ('//t.co', False)]
         for t in test:
-            self.assertEqual(self.object.clean(t[0]), t[1])
+            self.assertEquals(self.object.clean(t[0]), t[1])
 
 
 class UsernameCleanerTest(unittest.TestCase):
@@ -34,7 +34,7 @@ class UsernameCleanerTest(unittest.TestCase):
     def test_clean(self):
         test = [('taco', True), ('@taco', False), ('cat', True), ('@cat', False)]
         for t in test:
-            self.assertEqual(self.object.clean(t[0]), t[1])
+            self.assertEquals(self.object.clean(t[0]), t[1])
 
 
 class NumeralCleanerTest(unittest.TestCase):
@@ -44,7 +44,7 @@ class NumeralCleanerTest(unittest.TestCase):
     def test_clean(self):
         test = [('taco', True), (1, False), ('cat', True), ('3', False), (['taco'], False)]
         for t in test:
-            self.assertEqual(self.object.clean(t[0]), t[1])
+            self.assertEquals(self.object.clean(t[0]), t[1])
 
 
 class LemmatizerTest(unittest.TestCase):
