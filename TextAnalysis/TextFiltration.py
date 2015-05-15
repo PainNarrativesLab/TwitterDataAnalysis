@@ -47,7 +47,7 @@ class Text:
                 replacer = RegexpReplacer()
                 self.text = [replacer.replace(w) for w in self.text]
         except Exception as e:
-            print('failed to replace contractions %s' % e)
+            print(('failed to replace contractions %s' % e))
 
     def set_settings(self, lemmatize=False, porter_stem=False, remove_numerals=True, remove_punctuation=True, remove_stops=True, replace_contractions=True):
         """

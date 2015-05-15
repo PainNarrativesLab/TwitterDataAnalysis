@@ -28,7 +28,7 @@ class WordFreq(Stats):
         assert(type(word_list) is list)
         Stats.__init__(self, word_list)
         self.freqDist = nltk.FreqDist(self.data)
-        self.ranking = self.freqDist.keys()
+        self.ranking = list(self.freqDist.keys())
 
     def topN(self, number_to_display):
         """
@@ -60,6 +60,6 @@ class WordFreq(Stats):
         for word in self.data:
             fd.inc(word)
         results = []
-        for w in fd.iteritems():
+        for w in fd.items():
             results.append({'word': w[0], 'count' : w[1]})
         return results

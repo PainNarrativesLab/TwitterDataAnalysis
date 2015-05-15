@@ -1,7 +1,7 @@
 """
 written for iom db. not updated for tweets
 """
-from sphinxapi import SphinxClient
+from .sphinxapi import SphinxClient
 from IOMDataService import IOMService
 import re  # used by mask method
 
@@ -14,9 +14,9 @@ class SphinxSearch(SphinxClient, IOMService):
         IOMService.__init__(self)
         self.connect_to_mysql('false')
         #Print reminder that searchd needs to be running
-        print "Don't forget to start sphnix from the terminal: "
-        print "cd /usr/local/sphinx"
-        print "sudo searchd"
+        print("Don't forget to start sphnix from the terminal: ")
+        print("cd /usr/local/sphinx")
+        print("sudo searchd")
         #connection variables
         HOST = 'localhost'
         PORT = 9312
@@ -90,7 +90,7 @@ class SphinxSearch(SphinxClient, IOMService):
                 self.excerpt_index = 'iom_data_idx'
                 self.index_for_search = 'iom_data_idx'
                 self.sortOn = 'quoteText'
-                print 'Ready to search IOM testimony '
+                print('Ready to search IOM testimony ')
 
             #Searching patient testimony
             elif which_preset == 'iomPatients' or which_preset == 'onQuotes':
@@ -104,7 +104,7 @@ class SphinxSearch(SphinxClient, IOMService):
                 self.excerpt_index = 'test_patient_idx'
                 self.index_for_search = 'test_patient_idx'
                 self.sortOn = 'quoteText'
-                print 'Ready to search IOM testimony_patients '
+                print('Ready to search IOM testimony_patients ')
             #old database
             elif which_preset == 'onMain':
                 self.searchDB = 'narrativeproject'
@@ -117,7 +117,7 @@ class SphinxSearch(SphinxClient, IOMService):
                 self.excerpt_index = 'main_idx'
                 self.index_for_search = 'main_idx'
                 self.sortOn = 'RM_INDEX'
-                print 'Ready to search narrative project main'
+                print('Ready to search narrative project main')
 
             try:
                 #set sort mode
@@ -138,7 +138,7 @@ class SphinxSearch(SphinxClient, IOMService):
             except:
                 print ('Error setting match mode')
         except:
-            print 'error setting presets'
+            print('error setting presets')
             self.sphinxErrorHandler()
 
     def setTables(self, array_with_tables):
@@ -150,10 +150,10 @@ class SphinxSearch(SphinxClient, IOMService):
 
     def sphinxErrorHandler(self):
         if self.search_results == 'FALSE':
-            print "big problem: " + self.GetLastError();
+            print("big problem: " + self.GetLastError());
         else:
             if self.GetLastWarning():
-                print "WARNING: " + self.GetLastWarning() + "</br>"
+                print("WARNING: " + self.GetLastWarning() + "</br>")
 
     def search(self, search_string):
         try:
@@ -177,7 +177,7 @@ class SphinxSearch(SphinxClient, IOMService):
         #self.num_docs_w_term = w['docs']
         #self.total_occur_of_term = w['hits']
         except:
-            print 'search failed'
+            print('search failed')
             self.sphinxErrorHandler();
 
     def getContent(self):
@@ -190,7 +190,7 @@ class SphinxSearch(SphinxClient, IOMService):
                 self.returnAll()
                 self.result_content.append(self.results[0])
         except:
-            print 'Getting content failed'
+            print('Getting content failed')
 
     def buildExcerpts(self):
         """
@@ -210,7 +210,7 @@ class SphinxSearch(SphinxClient, IOMService):
                 self.excerpts.append(d)
         except:
             self.sphinxErrorHandler()
-            print 'Failed to build excerpts'
+            print('Failed to build excerpts')
 
     def mask_term(self, terms_to_mask):
         """
@@ -229,12 +229,12 @@ class SphinxSearch(SphinxClient, IOMService):
                              self.excerpts]
         except:
             self.sphinxErrorHandler()
-            print 'Failed to run re.sub on the excerpts and mask them'
+            print('Failed to run re.sub on the excerpts and mask them')
         else:
             #Make a copy of the altered excerpts in case want to do something else with excerpts
             self.masked = self.excerpts
-            print len(self.excerpts), ' records have been masked to remove ', terms_to_mask
-            print 'The list is in self.masked; it has also been returned '
+            print(len(self.excerpts), ' records have been masked to remove ', terms_to_mask)
+            print('The list is in self.masked; it has also been returned ')
             return self.masked
 
 
