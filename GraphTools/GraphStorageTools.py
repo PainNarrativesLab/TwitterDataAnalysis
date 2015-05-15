@@ -35,7 +35,7 @@ class GEXFSaver(object):
         for p in saver.problems:
             f.write('%s \n' % p)
         f.close()
-        print "%s problems" % len(saver.problems)
+        print("%s problems" % len(saver.problems))
         saver.problems = []
 
 def make_and_save_egographs(maingraph, term):
@@ -48,7 +48,7 @@ def make_and_save_egographs(maingraph, term):
     """
     g = nx.ego_graph(maingraph, term)
     g = remove_irrelevant_terms(g)
-    print nx.info(g)
+    print(nx.info(g))
     saver.save(g, '%s_egograph' % term)
     
 def load(date, graphname, path='charts_and_graphs'):

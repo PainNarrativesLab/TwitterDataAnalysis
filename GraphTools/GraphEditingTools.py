@@ -71,7 +71,7 @@ def merge_from_list(graph, merge_dict):
     Returns:
         Updated graph object
     """
-    for k in merge_dict.keys():
+    for k in list(merge_dict.keys()):
         graph = merge_nodes(graph, merge_dict[k], k)
     return graph
 

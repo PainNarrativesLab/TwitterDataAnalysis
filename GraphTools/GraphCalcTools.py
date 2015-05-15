@@ -12,7 +12,7 @@ def sorted_degree_map(degree_map):
     Returns:
         Sorted mapping
     """
-    ms = sorted(degree_map.iteritems(), key=lambda (k,v):(-v,k))
+    ms = sorted(iter(degree_map.items()), key=lambda k_v:(-k_v[1],k_v[0]))
     return ms
 
 def calc_and_save_closeness_centrality(graph, term):
