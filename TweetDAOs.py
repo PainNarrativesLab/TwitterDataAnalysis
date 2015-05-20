@@ -75,7 +75,7 @@ class MySqlConnection(Connection):
 
     def __init__(self, credential_file):
         self._driver = '+mysqlconnector'
-        super().__init__(credential_file)
+        super(__class__, self).__init__(credential_file)
 
     def _make_engine(self):
         self._dsn = "mysql%s://%s:%s@%s/%s" % (self._driver, self._username, self._password, self._server, self._db_name)

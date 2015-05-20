@@ -14,7 +14,7 @@ class ConnectionMock(TweetDAOs.Connection):
 
 class ConnectionTest(unittest.TestCase):
     def setUp(self):
-        self.cred_file = 'sql_test_credentials.xml'
+        self.cred_file = 'tests/sql_test_credentials.xml'
         self.server = 'testhost'
         self.port = 3000
         self.db_name = 'testdbname'
@@ -40,7 +40,7 @@ class SqliteConnectionTest(unittest.TestCase):
 
 class MySqlConnectionTest(unittest.TestCase):
     def setUp(self):
-        self.cred_file = 'sql_test_credentials.xml'
+        self.cred_file = 'tests/sql_test_credentials.xml'
 
     def test_make_engine(self):
         """
