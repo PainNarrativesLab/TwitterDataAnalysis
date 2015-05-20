@@ -84,7 +84,7 @@ class Ignore(object):
         word_list += cls.fragments
         word_list += cls.punctuation
         [word_list.append(x) for x in string.punctuation]
-        [word_list.append(word) for k in list(Ignore.words.keys()) for word in Ignore.words[k]]
+        [word_list.append(word) for k in Ignore.words.keys() for word in Ignore.words[k]]
         cls.word_tuple = tuple(word_list)
 
 
