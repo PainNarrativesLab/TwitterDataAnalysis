@@ -11,7 +11,7 @@ import sqlalchemy
 from sqlalchemy import Table, Column, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-#connecting to db
+# connecting to db
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -78,7 +78,11 @@ class MySqlConnection(Connection):
         super(__class__, self).__init__(credential_file)
 
     def _make_engine(self):
-        self._dsn = "mysql%s://%s:%s@%s/%s" % (self._driver, self._username, self._password, self._server, self._db_name)
+        if self._port:
+            server = "%s:%s" % (self._server, self._port)
+        else:
+            server = self._server
+        self._dsn = "mysql%s://%s:%s@%s/%s" % (self._driver, self._username, self._password, server, self._db_name)
         self.engine = create_engine(self._dsn)
 
 

@@ -48,7 +48,7 @@ class MySqlConnectionTest(unittest.TestCase):
         """
         conn = TweetDAOs.MySqlConnection(self.cred_file)
         self.assertIsInstance(conn.engine, sqlalchemy.engine.base.Engine, 'created engine')
-        self.assertEqual(conn._dsn, "mysql+mysqlconnector://testusername:testpassword@testhost/testdbname", "Correct dsn created")
+        self.assertEqual(conn._dsn, "mysql+mysqlconnector://testusername:testpassword@testhost:3000/testdbname", "Correct dsn created")
 
 
 class DAO_family_test(unittest.TestCase):

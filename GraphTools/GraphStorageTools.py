@@ -1,15 +1,16 @@
-
-#Tool for dealing with unicode encoding problems
-from django.utils.encoding import smart_str, smart_unicode
-import TwitterGEXF as TG #custom gexf saver
+# Tool for dealing with unicode encoding problems
 from datetime import date
+
+import TwitterGEXF as TG  # custom gexf saver
 import networkx as nx
+
 
 class GEXFSaver(object):
     """
     Saves graph in gexf format
     """
-    problems = []
+    problems = [ ]
+
     @staticmethod
     def stringit(x):
         """
@@ -31,12 +32,13 @@ class GEXFSaver(object):
         today = date.today()
         filename = '%s/%s_%s.gexf' % (path, date.today(), graphname)
         TG.write_gexf(tr, filename)
-        f = open('path/%s_%s_errors.txt' %(path, date.today(), graphname), 'w')
+        f = open('path/%s_%s_errors.txt' % (path, date.today(), graphname), 'w')
         for p in saver.problems:
             f.write('%s \n' % p)
         f.close()
         print("%s problems" % len(saver.problems))
-        saver.problems = []
+        saver.problems = [ ]
+
 
 def make_and_save_egographs(maingraph, term):
     """
@@ -50,12 +52,15 @@ def make_and_save_egographs(maingraph, term):
     g = remove_irrelevant_terms(g)
     print(nx.info(g))
     saver.save(g, '%s_egograph' % term)
-    
+
+
 def load(date, graphname, path='charts_and_graphs'):
     """
     Loads saved graphs
+    :param date:
     """
     return nx.read_gexf('%s/%s_%s.gexf' % (path, date, graphname))
+
 
 if __name__ == '__main__':
     pass
