@@ -200,6 +200,10 @@ class Users(Base):
     location = Column(String(225))
     is_translation_enabled = Column(String(10))
 
+class Tweet(Tweets):
+    def __init__(self):
+        super().__init__()
+
 tweetsXtags = Table('tweetsXtags', Base.metadata,
     Column('tweetID', Integer, ForeignKey('tweets.tweetID')),
     Column('tagID', Integer, ForeignKey('hashtags.tagID'))

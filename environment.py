@@ -10,3 +10,7 @@ DATAFOLDER = BASE + '/Data'
 MAPPING_PATH = "%s/TwitterDataAnalysis/mappings" % BASE
 
 CREDENTIAL_FILE = '%s/private_credentials/sql_local_credentials.xml' % BASE
+
+
+ENGINE = 'sqlite'
+TEST = True
