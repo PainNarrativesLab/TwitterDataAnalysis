@@ -1,9 +1,38 @@
 # Tool for dealing with unicode encoding problems
 from datetime import date
 
-import TwitterGEXF as TG  # custom gexf saver
+from TwitterMining import TwitterGEXF as TG  # custom gexf saver
 import networkx as nx
+##Save trimmed graph as gexf
+#Tool for dealing with unicode encoding problems
 
+from django.utils.encoding import smart_str, smart_unicode
+
+class saver:
+    problems = []
+    @staticmethod
+    def stringit(x):
+        try:
+            return x.encode('ascii')
+        except UnicodeDecodeError:
+            saver.problems.append(x)
+    @staticmethod
+    def save(graph, graphname):
+        """
+        Saves a graph to a file after fixing unicode problems to work around a bug in nx
+        @param graph The graph to save
+        @param filename The file to save it to
+        """
+        tr = nx.relabel_nodes(graph, saver.stringit)
+        today = date.today()
+        filename = 'charts_and_graphs/%s_%s.gexf' % (date.today(), graphname)
+        TG.write_gexf(tr, filename)
+        f = open('charts_and_graphs/%s_%s_errors.txt' %(date.today(), graphname), 'w')
+        for p in saver.problems:
+            f.write('%s \n' % p)
+        f.close()
+        print "%s problems" % len(saver.problems)
+        saver.problems = []
 
 class GEXFSaver(object):
     """

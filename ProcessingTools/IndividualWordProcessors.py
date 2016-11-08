@@ -8,7 +8,10 @@ from WordDAOs import *
 from ConstantsAndUtilities import *
 from DataStructures import *
 
-from TweetDAOs import Tweet
+# tt = "%s/WordBagMakers" % TEXT_TOOLS_PATH
+# import TextTools.WordBagMakers
+
+from TweetDAOs import *
 from nltk.tokenize import word_tokenize, sent_tokenize
 
 
@@ -51,9 +54,7 @@ class WordOperations( IOperation ):
         return word.strip( )
 
 
-# .capitalize()
-
-#         for operation in self.Operations:
+# for operation in self.Operations:
 #             word = operation(word)
 #         return word
 
@@ -97,14 +98,19 @@ class TweetProcessor( object ):
 
         for tweet in tweets:
             # This way we can use either a list of strings or tweet objects
-            if type( tweet ) is Tweet:
-                tweet = tweet.text
-                tweetId = tweet.id
-            else:  # for dev
-                tweetId = 5
+            if type( tweet ) is Tweet or type( tweet ) is Tweets:
+                text = str( tweet.tweetText )
+                tweetId = tweet.tweetID
+            else:
+                if TEST is True:
+                    # In development we can just give it a value
+                    tweetId = TESTING_TWEET_ID
+                    text = tweet
+                else:
+                    raise ValueError
 
             # Split the tweet into sentences
-            sentences = self.Tokenizer.process( tweet )
+            sentences = self.Tokenizer.process( text )
 
         # process sentences
         [ self._processSentence( sentenceIndex, sentence, tweetId ) for sentenceIndex, sentence in
@@ -117,5 +123,3 @@ class TweetProcessor( object ):
           enumerate( word_tokenize( sentence ) ) ]
 
 
-if __name__ == '__main__':
-    pass

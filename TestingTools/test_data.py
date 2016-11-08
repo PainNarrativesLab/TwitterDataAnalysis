@@ -2,7 +2,7 @@
 Created by adam on 11/6/16
 """
 __author__ = 'adam'
-
+from environment import *
 from DataStructures import *
 # Testing tools
 
@@ -26,7 +26,9 @@ def makeExpectedResult( numWords=4, numSent=4, tweetId=None ):
     for s in range( 0, numSent ):
         for w in range( 0, numWords ):
             text = "s%sw%s" % (s, w)
-            tweetid = tweetId if tweetId != None else len( results ) * 10 + (s + w)
+
+            tweetid = tweetId if tweetId != None else TESTING_TWEET_ID
+            # len( results ) * 10 + (s + w)
             results.append( Result( s, w, text, tweetid ) )
 
     return results
@@ -49,5 +51,5 @@ def functionalTestOfProcessor( numWords=4, numSent=4, numTweets=4 ):
         # make fake tweets
         tweets.append( makeTestTweetString( ) )
         # make what we expect the processor to output
-        results.append( makeExpectedResult( 4, 4, 5 ) )
+        results.append( makeExpectedResult( 4, 4, TESTING_TWEET_ID ) )
 
