@@ -5,17 +5,13 @@ Created by adam on 11/4/16
 """
 __author__ = 'adam'
 
-import os
-import sys
-import xml.etree.ElementTree as ET
+import datetime
 
-import sqlalchemy
-from sqlalchemy import Table, Column, ForeignKey, Integer, String
+from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-# connecting to db
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+
+from DataTools import DataConnections
 
 # Base class that maintains the catalog of tables and classes in db
 Base = declarative_base()
@@ -49,18 +45,19 @@ class Word(Base):
     __tablename__ = 'words'
     id = Column(Integer, primary_key=True, autoincrement=True)
     word = Column(String(225))
-    inserted_at = Column(String(225))
-    updated_at = Column(String(225))
+    inserted_at = Column(DateTime, default=datetime.datetime.now())
+    updated_at = Column(DateTime, onupdate=datetime.datetime.now())
     relationship( "WordMapping", backref="words" )
     relationship( "StandardizedWordMapping", backref="words" )
+    UniqueConstraint( 'word')
 
 class StandardizedWord(Base):
     """Correctly spelled, English words"""
     __tablename__ = 'std_words'
     id = Column( Integer, primary_key=True, autoincrement=True )
     word = Column( String( 225 ) )
-    inserted_at = Column( String( 225 ) )
-    updated_at = Column( String( 225 ) )
+    inserted_at = Column( DateTime, default=datetime.datetime.now() )
+    updated_at = Column( DateTime, onupdate=datetime.datetime.now() )
 
 
 class WordMapping(Base):
@@ -79,12 +76,14 @@ class StandardizedWordMapping(Base):
     __tablename__ = 'std_words_map'
     word_id = Column( Integer, ForeignKey('words.id'), primary_key=True, autoincrement=False )
     standardized_word_id = Column( Integer, primary_key=False, autoincrement=False )
-    inserted_at = Column( String( 225 ) )
-    updated_at = Column( String( 225 ) )
+    inserted_at = Column( DateTime, default=datetime.datetime.now() )
+    updated_at = Column( DateTime, onupdate=datetime.datetime.now() )
 
 
-if __name__ == '__main__':
-    pass
-    # connect to db
-     # ORM's handle to database at global level
-    # Session = sessionmaker(bind=mysql_en)
+def create_db_tables( seed=False ):
+    """Creates tables in the database"""
+    engine = DataConnections.initialize_engine( )
+    # create the tables
+    Base.metadata.create_all(engine)
+    # metadata = MetaData( )
+

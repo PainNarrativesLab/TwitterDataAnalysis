@@ -143,7 +143,7 @@ class DAO(BaseDAO):
 # test_mysql_engine = create_engine("mysql://root:@localhost/test_td")
 
 #connect to db
-# ORM's handle to database at global level
+# DataTools's handle to database at global level
 # Session = sessionmaker(bind=mysql_engine)
 
 # connect to db: Local object
@@ -261,5 +261,5 @@ tweetsXtags = Table('tweetsXtags', Base.metadata,
 
 if __name__ == '__main__':
     # connect to db
-    # ORM's handle to database at global level
+    # DataTools's handle to database at global level
     Session = sessionmaker(bind=mysql_engine)

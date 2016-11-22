@@ -3,16 +3,11 @@ Created by adam on 11/6/16
 """
 __author__ = 'adam'
 
-from environment import *
-from WordDAOs import *
-from ConstantsAndUtilities import *
-from DataStructures import *
-
-# tt = "%s/WordBagMakers" % TEXT_TOOLS_PATH
-# import TextTools.WordBagMakers
-
-from TweetDAOs import *
 from nltk.tokenize import word_tokenize, sent_tokenize
+
+from ConstantsAndUtilities import *
+from DataTools.DataStructures import *
+from DataTools.TweetORM import *
 
 
 class IOperation:
@@ -38,36 +33,6 @@ class SentenceTokenizer( ITokenizer ):
         return sent_tokenize( item )
 
 
-class WordOperations( IOperation ):
-    """Perform all operations that need to be performed on a single word"""
-
-    def __init__( self ):
-        super( ).__init__( )
-        self.Operations = [ ]
-
-    def load( self, callableOperation ):
-        """Adds a callable operation to the queue"""
-        self.Operations.append( callableOperation )
-
-    def process( self, word ):
-        # missing filter for punt
-        return word.strip( )
-
-
-# for operation in self.Operations:
-#             word = operation(word)
-#         return word
-
-class WordOperationsTest:
-    def __init__( self ):
-        pass
-
-    def test_load( self ):
-        # function case
-        pass
-
-        # method case
-
 
 class SaveQueueHandler( IQueueHandler ):
     def __init__( self ):
@@ -87,11 +52,18 @@ class TweetProcessor( object ):
         """
         self.Tokenizer = SentenceTokenizer
         self.QueueHandler = DbQueueHandler
+        self._word_processors = []
+
+    def load_word_processor(self, processor):
+        """Add something which acts on individual words to the stack that will run on each word from the tweet"""
+        self._word_processors.append(processor)
+        self._word_processors = list(set(self._word_processors))
 
     def boom( self, sentenceIndex, wordIndex, text, tweetId ):
         """Makes the result and hands it off to the queue handler"""
-        result = Result( sentenceIndex, wordIndex, text, tweetId )
-        self.QueueHandler.enque( result )
+        if text is not None:
+            result = Result( sentenceIndex, wordIndex, text, tweetId )
+            self.QueueHandler.enque( result )
 
     def process( self, tweets ):
         """Runs the process on the entire set of tweets and returns the result"""
@@ -116,10 +88,16 @@ class TweetProcessor( object ):
         [ self._processSentence( sentenceIndex, sentence, tweetId ) for sentenceIndex, sentence in
           enumerate( sentences ) ]
 
+    def _run_word_processors(self, word):
+        """Runs each processor in the stack on the string"""
+        if len(self._word_processors) > 0:
+            for wp in self._word_processors:
+                word = wp.process(word)
+        return word
+
     def _processSentence( self, sentenceIndex, sentence, tweetId ):
         # word tokenize
-        operations = WordOperations( )
-        [ self.boom( sentenceIndex, idx, operations.process( word ), tweetId ) for idx, word in
+        [ self.boom( sentenceIndex, idx, self._run_word_processors(word ), tweetId ) for idx, word in
           enumerate( word_tokenize( sentence ) ) ]
 
 

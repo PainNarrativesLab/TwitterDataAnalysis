@@ -1,10 +1,13 @@
 __author__ = 'ars62917'
 
 import unittest
-import sqlalchemy
-import TweetDAOs
 
-class ConnectionMock(TweetDAOs.Connection):
+import sqlalchemy
+
+from DataTools import TweetORM
+
+
+class ConnectionMock( TweetORM.Connection ):
     def _make_engine(self):
         pass
 
@@ -34,7 +37,7 @@ class SqliteConnectionTest(unittest.TestCase):
         pass
 
     def test_make_engine(self):
-        conn = TweetDAOs.SqliteConnection()
+        conn = TweetORM.SqliteConnection( )
         self.assertIsInstance(conn.engine, sqlalchemy.engine.base.Engine, 'created engine')
         self.assertIsInstance(conn.engine, sqlalchemy.engine.base.Engine, 'created engine')
 
@@ -46,7 +49,7 @@ class MySqlConnectionTest(unittest.TestCase):
         """
         NB., test dsn string doesn't use the port
         """
-        conn = TweetDAOs.MySqlConnection(self.cred_file)
+        conn = TweetORM.MySqlConnection( self.cred_file )
         self.assertIsInstance(conn.engine, sqlalchemy.engine.base.Engine, 'created engine')
         self.assertEqual(conn._dsn, "mysql+mysqlconnector://testusername:testpassword@testhost:3000/testdbname", "Correct dsn created")
 
@@ -55,8 +58,8 @@ class DAO_family_test(unittest.TestCase):
     def setUp(self):
         self.engine1 = sqlalchemy.create_engine('sqlite:///:memory:', echo=True)
         self.engine2 = sqlalchemy.create_engine('sqlite:///:memory:', echo=True)
-        self.object1 = TweetDAOs.DAO(self.engine1)
-        self.object2 = TweetDAOs.DAO(self.engine2)
+        self.object1 = TweetORM.DAO( self.engine1 )
+        self.object2 = TweetORM.DAO( self.engine2 )
 
     def test_class_inheritance(self):
         self.assertEqual(type(self.object1.global_session), sqlalchemy.orm.session.sessionmaker, "object1 has correct session factory")

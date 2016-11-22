@@ -1,6 +1,6 @@
 # Tool for dealing with unicode encoding problems
 from datetime import date
-
+from GraphEditingTools import *
 from TwitterMining import TwitterGEXF as TG  # custom gexf saver
 import networkx as nx
 ##Save trimmed graph as gexf
@@ -31,7 +31,7 @@ class saver:
         for p in saver.problems:
             f.write('%s \n' % p)
         f.close()
-        print "%s problems" % len(saver.problems)
+        print ("%s problems" % len(saver.problems))
         saver.problems = []
 
 class GEXFSaver(object):

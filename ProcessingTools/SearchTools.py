@@ -3,13 +3,11 @@ Created by adam on 11/8/16
 """
 __author__ = 'adam'
 
-from environment import *
-import TextTools.TextCleaningTools as T
-import TweetDAOs
-
-# Pandas
-from pandas import DataFrame, Series
 import pandas as pd
+
+from DataTools import TweetORM
+from environment import *
+
 pd.options.display.max_rows = 999 #let pandas dataframe listings go long
 
 
@@ -225,12 +223,12 @@ if __name__ == '__main__':
     # /usr/local/Cellar/sphinx/2.1.9/bin/indexer --all
     # searchd -c /usr/local/etc/sphinx.conf
 
-    s = dao.session.query( TweetDAOs.Users ).filter( TweetDAOs.Users.userID == 5981342 ).one( )
+    s = dao.session.query( TweetORM.Users ).filter( TweetORM.Users.userID == 5981342 ).one( )
     print( s.screen_name )
 
 
     def tweetids( ):
-        for t in dao.session.query( TweetDAOs.Tweets ).limit( 10 ):
+        for t in dao.session.query( TweetORM.Tweets ).limit( 10 ):
             yield (t.tweetID)
 
 

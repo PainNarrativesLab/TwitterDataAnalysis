@@ -2,12 +2,16 @@
 Created by adam on 11/6/16
 """
 __author__ = 'adam'
-from environment import *
-from DataStructures import *
-# Testing tools
-
 import random
+
+import nltk
 from faker import Faker
+
+import ConstantsAndUtilities
+import TextProcessors
+from DataTools.DataStructures import *
+from TextProcessors import WordProcessors
+from environment import *
 
 fake = Faker()
 
@@ -52,4 +56,30 @@ def functionalTestOfProcessor( numWords=4, numSent=4, numTweets=4 ):
         tweets.append( makeTestTweetString( ) )
         # make what we expect the processor to output
         results.append( makeExpectedResult( 4, 4, TESTING_TWEET_ID ) )
+
+
+def initialize_processor( ):
+    # Holds words to ignore etc
+
+    ignore = ConstantsAndUtilities.Ignore( )
+    ignore._construct()
+    merge = ConstantsAndUtilities.Merge( )
+
+    """Initialize the tools for filtering and modifying the individual tweet words"""
+    processor = TextProcessors.WordProcessors.SingleWordProcessor( )
+
+    ignoreListFilter = TextProcessors.Filters.IgnoreListFilter( )
+    ignoreListFilter.add_to_ignorelist( ignore.get_list( ) )
+    # or do we keep them?
+    ignoreListFilter.add_to_ignorelist( nltk.corpus.stopwords.words( 'english' ) )
+
+    processor.add_to_filters( ignoreListFilter )
+    processor.add_to_filters( TextProcessors.Filters.UsernameFilter( ) )
+
+    processor.add_to_filters( TextProcessors.Filters.PunctuationFilter( ) )
+    processor.add_to_filters( TextProcessors.Filters.URLFilter( ) )
+    processor.add_to_filters( TextProcessors.Filters.NumeralFilter( ) )
+    processor.add_to_modifiers( TextProcessors.Modifiers.CaseConverter( ) )
+
+    return processor
 

@@ -100,6 +100,9 @@ class Ignore( object ):
         return tuple( listOfStuff )
 
 
+Ignore._construct( )
+
+
 class Merge( object ):
     """
     This holds terms which are to be merged together in analyzing graphs
@@ -134,6 +137,4 @@ class Merge( object ):
         return cls.toMergeLookup.get(item, None)
 
 
-if __name__ == '__main__':
-    Ignore._construct()
 
