@@ -1,5 +1,3 @@
-__author__ = 'ars62917'
-
 import unittest
 
 import sqlalchemy
@@ -68,19 +66,5 @@ class DAO_family_test(unittest.TestCase):
         self.assertNotEqual(self.object1.session, self.object2.session, "Objects have distinct sessions")
 
 
-# class MyTestCase(unittest.TestCase):
-#
-#     def setUp(self):
-#         Base = declarative_base()
-#         sqlite_engine = create_engine('sqlite:///:memory:', echo=True)
-#         Base.metadata.create_all(sqlite_engine)
-#
-#     def test_class_inheritance(self):
-#         user.userID = 23
-#         session.add(user)
-#         session.commit()
-#         self.assertEqual(True, False)
-
-
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main( )

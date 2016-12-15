@@ -3,10 +3,23 @@ Created by adam on 11/6/16
 """
 __author__ = 'adam'
 
+import sqlalchemy
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, relationship
+
 from DataTools.DataStructures import *
+from DataTools.DataConnections import *
 from DataTools.WordORM import *
 
-if type(Session) is not None:
+from environment import *
+
+try:
+    if type(Session) is not None:
+        pass
+    else:
+        raise ValueError
+except:
     # connect to db
     engine = DataConnections.initialize_engine( )
     # DataTools's handle to database at global level
@@ -38,7 +51,6 @@ class WordRepository( IRepository, ISessionHaver ):
     def __init__( self ):
         super( ).__init__( )
 
-
     def get_word( self, result ):
         """
         Look up whether word exists already
@@ -46,7 +58,7 @@ class WordRepository( IRepository, ISessionHaver ):
         Should not save yet so that the map can be flushed too
         """
         text = result.text if type( result ) is Result else result
-
+        # print("get_word: %s" % text)
         # Get if already exists
         word = self.session.query( Word ).filter( Word.word == text ).first( )
 
@@ -58,35 +70,52 @@ class WordRepository( IRepository, ISessionHaver ):
         return word
 
     def get_map( self, result, word ):
-        """Creates a mapping object from the result"""
+        """
+        Creates a mapping object from the result. Tries loading a preexisting
+        mapping first, if one exists, it returns the object
+        """
         assert (type( result ) is Result)
         assert (type( word ) is Word)
+        # try loading in case already recorded
+        # wordMap = self.session.query(WordMapping).filter(
+        #     WordMapping.tweet_id == result.tweet_id and
+        #     WordMapping.sentence_index == result.sentence_index and
+        #     WordMapping.word_index == result.word_index
+        # ).first()
+        #
+        # if not isinstance(wordMap, WordMapping):
         wordMap = WordMapping( )
         wordMap.sentence_index = result.sentence_index
         wordMap.word_index = result.word_index
-        # todo these should be objects loaded in
         wordMap.tweet_id = result.tweet_id
-        wordMap.word_id = word.id  # update to use sqlalchemy relationship
+        wordMap.word = word
         return wordMap
 
-    def _fire_save_notification( self, wordMap ):
-        print( "TODO: Replace this with an event firing" )
+    def _fire_save_notification( self, item=None ):
+        pass
+        # print( "TODO: Replace this with a successful save event firing" )
 
-    def _fire_error_saving_notification( self, wordMap ):
-        print( "TODO Replace this with an error event firing" )
+    def _fire_error_saving_notification( self, item=None ):
+        pass
+        # print( "TODO Replace this with an error saving event firing" )
 
-    def save( self, listOfResults ):
+    def save( self, resultOrResults ):
         """
         For each word contained in the list, this retreiveds the object if it already exists or
         creates a new word object. It then writes the word and mapping to the db before firing
         various notifications
         """
-        for result in listOfResults:
+        # make a list if only one passed in
+        resultOrResults = [ resultOrResults ] if isinstance( resultOrResults, Result ) else resultOrResults
+
+        for result in resultOrResults:
             assert (type( result ) is Result)
             # get a Word object for the result
             word = self.get_word( result )
             # create a mapping object and attach word
             wordMap = self.get_map( result, word )
+            # print( "save: %s" % wordMap.sentence_index )
+
             if self.write_to_db( word, wordMap ) is True:
                 # fire a save complete event
                 self._fire_save_notification( wordMap )
@@ -97,11 +126,13 @@ class WordRepository( IRepository, ISessionHaver ):
         """Takes a list of objects and flushes them to the database"""
         try:
             toSave = [ a for a in args ]
-            print( toSave )
+            # print( toSave )
             # save them
             self.session.add_all( toSave )
             self.session.commit( )
+            self._fire_save_notification()
             return True
         except Exception as e:
-            print( e )
+            print( "Error : %s" % e )
+            self._fire_error_saving_notification(e)
             return False

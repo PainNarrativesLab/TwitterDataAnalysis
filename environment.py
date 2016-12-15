@@ -34,6 +34,7 @@ DB = 'twitter_words'
 # Whether this is a test
 TEST = True
 
+PRINT_STEPS = False
 
 # default tweet id to use in dev
 TESTING_TWEET_ID = 123456789

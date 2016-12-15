@@ -1,6 +1,7 @@
 __author__ = 'adam'
 
 import unittest
+
 from ConstantsAndUtilities import *
 
 
@@ -27,9 +28,9 @@ class IgnoreTest(unittest.TestCase):
         self.assertIsInstance(Ignore.get_list(), list, "whether object returned is list")
         self.assertTrue(len(Ignore.get_list()) > 0)
 
-    def test_warn(self):
-        import warnings
-        warnings.warn("deprecated")
+    # def test_warn(self):
+    #     import warnings
+    #     warnings.warn("deprecated")
 
 
 

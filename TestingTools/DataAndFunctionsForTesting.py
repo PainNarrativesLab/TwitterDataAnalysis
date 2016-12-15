@@ -10,7 +10,7 @@ from faker import Faker
 import ConstantsAndUtilities
 import TextProcessors
 from DataTools.DataStructures import *
-from TextProcessors import WordProcessors
+from TextProcessors import Processors
 from environment import *
 
 fake = Faker()
@@ -66,7 +66,7 @@ def initialize_processor( ):
     merge = ConstantsAndUtilities.Merge( )
 
     """Initialize the tools for filtering and modifying the individual tweet words"""
-    processor = TextProcessors.WordProcessors.SingleWordProcessor( )
+    processor = TextProcessors.Processors.SingleWordProcessor( )
 
     ignoreListFilter = TextProcessors.Filters.IgnoreListFilter( )
     ignoreListFilter.add_to_ignorelist( ignore.get_list( ) )
