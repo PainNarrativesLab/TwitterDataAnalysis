@@ -24,9 +24,11 @@ except:
     engine = DataConnections.initialize_engine( )
     # DataTools's handle to database at global level
     Session = sessionmaker( bind=engine )
+
     # connect to db: Local object
     session = Session( )
-
+    if PLEASE_ROLLBACK is True:
+        session.rollback()
 
 class IRepository( object ):
     def save( self, listOfResults ): raise NotImplementedError
@@ -41,6 +43,13 @@ class ISessionHaver(object):
         """Loads the sqlalchemy Session object in as self.session"""
         if Session:
             self.session = session
+
+    def rollback_transaction(self):
+        """
+        Rolls back the Session's transaction when there's been a problem.
+        """
+        self.session.rollback()
+
 
 
 class WordRepository( IRepository, ISessionHaver ):
@@ -126,7 +135,6 @@ class WordRepository( IRepository, ISessionHaver ):
         """Takes a list of objects and flushes them to the database"""
         try:
             toSave = [ a for a in args ]
-            # print( toSave )
             # save them
             self.session.add_all( toSave )
             self.session.commit( )

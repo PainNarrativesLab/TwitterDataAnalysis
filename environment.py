@@ -34,6 +34,12 @@ DB = 'twitter_words'
 # Whether this is a test
 TEST = True
 
+# Default: False
+# Sometimes things go wrong in develoment and
+# a transaction will get stuck. This flag gets picked
+# up at the head of DataRespositories and calls session.rollback()
+PLEASE_ROLLBACK  = True
+
 PRINT_STEPS = False
 
 # default tweet id to use in dev

@@ -44,22 +44,17 @@ class SaveQueueHandler( IQueueHandler, ILockingQueue ):
     def __init__( self ):
         super( ).__init__( )
         self.listeners = []
-        # self.queue = [ ]
-        # self.bk=[]
 
     def enque( self, item ):
         """Push the item onto the queue and call listeners"""
         if PRINT_STEPS is True: print("SaveQueueHandler.enque()")
         self._push_onto_queue(item)
-        # self.queue.append( item )
-        # self.bk.append(item)
         self.notify_new_item_in_queue()
 
     def next(self):
         """Return the next item in the queue, removing it from the queue"""
         # print("SaveQueueHandler.next()")
         return self._get_next_from_queue()
-        # return self.queue.pop()
 
     def register_listener(self, listener):
         """

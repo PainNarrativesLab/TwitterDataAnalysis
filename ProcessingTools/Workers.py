@@ -5,6 +5,9 @@ __author__ = 'adam'
 
 from environment import *
 import ProcessingControllers
+import threading
+
+
 
 class IWorker(object):
     """Base for workers which carry out a specified task, sometimes in their own
@@ -37,10 +40,8 @@ class LogWorker( IWorker ):
 
 class StringProcessingWorker(IWorker):
     def __init__(self):
-    # def __init__(self, cursor, queue, word_processor):
         super().__init__()
         self.totalProcessed = 0
-        # StringProcessingWorker.initialize(cursor, queue, word_processor)
 
     @classmethod
     def initialize(cls, cursor, queue, word_processor):
@@ -65,31 +66,11 @@ class StringProcessingWorker(IWorker):
 
                 #Run the string processing tasks on it
                 # Push the result into the queue
-                StringProcessingWorker.run(tweet)
+                self.run(tweet)
 
                 self.totalProcessed += 1
 
             except Exception as e:
                 print( e )
                 keepGoing = False
-
-    def do_it_dawg(self):
-        """Same as do it, just calls a method on the to use a dawg datastructure"""
-        keepGoing = True
-
-        while keepGoing:
-            try:
-                # Get a tweet from the stack
-                tweet = self.cursor.next_tweet( )
-
-                #Run the string processing tasks on it
-                # Push the result into the queue
-                StringProcessingWorker.run(tweet)
-
-                self.totalProcessed += 1
-
-            except Exception as e:
-                print( e )
-                keepGoing = False
-
 

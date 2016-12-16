@@ -19,17 +19,16 @@ class SaveListener(IListener):
     """Listens for a result to be ready for saving and then dispatches
     a save processor to handle it
     """
-
     def __init__(self):
+        # Initializes the repository at the class level
         SaveWorker._initialize_repository( DataTools.DataRepositories.WordRepository( ) )
 
     def handle(self, queue):
         if PRINT_STEPS is True: print("SaveListener.handle called")
-        assert(isinstance(queue, QueueTools.IQueueHandler))
+        # assert(isinstance(queue, QueueTools.IQueueHandler))
 
         # pull a result off the queue
         result = queue.next()
-
         # save it
         SaveWorker.run(result)
 
@@ -41,7 +40,8 @@ class LogListener(IListener):
 
     def handle(self, handler):
         if PRINT_STEPS is True: print("SaveListener.handle called")
-        assert(isinstance(handler, QueueTools.IQueueHandler))
+        # assert(isinstance(handler, QueueTools.IQueueHandler))
+
         # pull a result off the queue
         result = handler.next()
 
