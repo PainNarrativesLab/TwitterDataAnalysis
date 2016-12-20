@@ -4,44 +4,24 @@ Created by adam on 12/15/16
 __author__ = 'adam'
 
 #General tools
-import sys
-import locale
-import json
-import time
-from random import shuffle
-import itertools #For set operations
 # from urllib2 import URLError
 import datetime
-from datetime import time
-from datetime import date
-import string
-import shelve
-
-from OptimizationTools import *
-
 from threading import Thread
 
-from environment import *
 import ConstantsAndUtilities
-
 from DataTools import WordORM
+from OptimizationTools import *
+from environment import *
 WordORM.create_db_tables()
 
 #%cd /Users/adam/Dropbox/PainNarrativesLab/TwitterDataAnalysis
 #%bookmark twitteranalysis
-from TestingTools import DataAndFunctionsForTesting
-from DataTools import DataStructures
-from DataTools import DataConnections
-from DataTools import WordORM
-from DataTools import DataRepositories
 
 # Initialize the tools for filtering and modifying the individual tweet words
 import TextProcessors.Processors
-from TextProcessors.Filters import *
 from TextProcessors.Modifiers import *
 from TextProcessors.Processors import *
 
-from ProcessingTools import ProcessingControllers
 from ProcessingTools import Listeners
 from ProcessingTools import Workers
 import ProcessingTools.QueueTools as QT
@@ -50,7 +30,6 @@ import ProcessingTools.QueueTools as QT
 import DataTools.Cursors
 
 # Pandas
-from pandas import DataFrame, Series
 import pandas as pd
 pd.options.display.max_rows = 999 #let pandas dataframe listings go long
 
@@ -58,8 +37,8 @@ pd.options.display.max_rows = 999 #let pandas dataframe listings go long
 if __name__ == '__main__':
     #Mission Control
     RUNS = 5
-    MAX_THREADS = 100
-    START_THREADS = 98
+    MAX_THREADS = 12
+    START_THREADS = 10
     DATASTRUCTURES = ('tuple', 'dawg')
     NOTE = 'command line programmatic run 0-2 threads'
     MODULE = 'stringProcessingWorker'

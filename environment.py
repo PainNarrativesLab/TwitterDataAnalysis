@@ -3,7 +3,9 @@ Created by adam on 11/3/16
 """
 __author__ = 'adam'
 
-import os, sys
+import os
+import sys
+
 ROOT = os.getenv("HOME")
 BASE = '%s/Dropbox/PainNarrativesLab' % ROOT
 
@@ -38,7 +40,7 @@ TEST = True
 # Sometimes things go wrong in develoment and
 # a transaction will get stuck. This flag gets picked
 # up at the head of DataRespositories and calls session.rollback()
-PLEASE_ROLLBACK  = True
+PLEASE_ROLLBACK = False
 
 PRINT_STEPS = False
 
