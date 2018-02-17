@@ -11,15 +11,17 @@ BASE = '%s/Dropbox/PainNarrativesLab' % ROOT
 
 sys.path.append('%s/Dropbox/iPythonFiles/BaseClasses' % ROOT) #the directory that contains various common custom classes
 # sys.path.append('%s/TextTools/ProcessingTools' % BASE) #the directory that contains tools for filtering and manipulating text
-sys.path.append('%s/TextTools/' % BASE) #the directory that contains my_pkg
 
 DATAFOLDER = BASE + '/Data'
 MAPPING_PATH = "%s/TwitterDataAnalysis/mappings" % BASE
 CREDENTIAL_FILE = '%s/private_credentials/sql_local_credentials.xml' % BASE
 
-#Project folders
+# Project folders
 TEXT_TOOLS_PATH = "%s/TextTools/" % BASE
 TWITTER_MINING_PATH = "%s/TwitterMining/" % BASE
+
+sys.path.append(TEXT_TOOLS_PATH)
+sys.path.append('%s/TextTools/TextProcessors' % BASE)
 
 
 # import importlib.util

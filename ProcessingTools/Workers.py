@@ -4,9 +4,8 @@ Created by adam on 11/23/16
 __author__ = 'adam'
 
 from environment import *
-import ProcessingControllers
+import ProcessingTools.ProcessingControllers as ProcessingControllers
 import threading
-
 
 
 class IWorker(object):
@@ -20,7 +19,7 @@ class SaveWorker(IWorker):
     """Handles saving items from a queue using a repository"""
 
     @classmethod
-    def _initialize_repository(cls, repository):
+    def initialize_repository(cls, repository):
         """Loads one copy of the data repository for all instances to use"""
         cls.repository = repository
 
@@ -54,7 +53,6 @@ class StringProcessingWorker(IWorker):
     def run(cls, item):
         if PRINT_STEPS is True: print("StringProcessingWorker.run()")
         return cls.processor.process(item)
-
 
     def do_it(self):
         keepGoing = True

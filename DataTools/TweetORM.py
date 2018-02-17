@@ -14,11 +14,10 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from DataTools.DataConnections import *
+from DataTools import DataConnections
 
 # Base class that maintains the catalog of tables and classes in db
 Base = declarative_base()
-
 
 
 class Hashtags(Base):
@@ -27,6 +26,7 @@ class Hashtags(Base):
     # Notice that each column is also a normal Python instance attribute.
     tagID = Column(Integer, primary_key=True)
     hashtag = Column(String(100), nullable=False)
+
 
 class Tweets(Base):
     __tablename__ = 'tweets'
@@ -47,9 +47,10 @@ class Tweets(Base):
     is_translation_enabled = Column(String(100))
     profile_location = Column(String(100))
 
+
 class Users(Base):
     __tablename__ = 'users'
-    indexer = Column(Integer, unique=True)
+    # indexer = Column(Integer, unique=True)
     userID = Column(Integer, primary_key=True, autoincrement=False)
     screen_name = Column(String(225))
     id_str = Column(String(225))
@@ -70,17 +71,25 @@ class Users(Base):
     location = Column(String(225))
     is_translation_enabled = Column(String(10))
 
+
 class Tweet(Tweets):
     def __init__(self):
         super().__init__()
 
+
 tweetsXtags = Table('tweetsXtags', Base.metadata,
-    Column('tweetID', Integer, ForeignKey('tweets.tweetID')),
-    Column('tagID', Integer, ForeignKey('hashtags.tagID'))
-)
+                    Column('tweetID', Integer, ForeignKey('tweets.tweetID')),
+                    Column('tagID', Integer, ForeignKey('hashtags.tagID'))
+                    )
 
 # Create all tables in the engine. This is equivalent to "Create Table"
 # statements in raw SQL.
 # Base.metadata.create_all(sqlite_engine)
 
-#
+def create_db_tables(seed=False):
+    """Creates tables in the database"""
+    engine = DataConnections.initialize_engine()
+    # create the tables
+    Base.metadata.create_all(engine)
+    # metadata = MetaData( )
+
