@@ -5,14 +5,15 @@ __author__ = 'adam'
 import os
 
 from logbook import FileHandler
-
-BASE = os.getenv("HOME")
-# Logging
-LOG_FOLDER_PATH = "%s/Desktop/TwitterDataAnalysisLogs" % BASE
-
 from Loggers.ILogger import ILogger
 
+
+BASE = os.getenv("HOME")
+# todo restore environment
 # from TwitterDataAnalysis.environment import *
+
+# Logging
+LOG_FOLDER_PATH = "%s/Desktop/TwitterDataAnalysisLogs" % BASE
 
 DEFAULT_LOG_FILE_NAME = 'twitter_log.txt'
 DEFAULT_LOG_FILE_PATH = "%s/%s" % (LOG_FOLDER_PATH, DEFAULT_LOG_FILE_NAME)

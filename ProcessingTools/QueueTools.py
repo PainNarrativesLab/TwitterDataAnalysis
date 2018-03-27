@@ -8,8 +8,8 @@ from environment import *
 # from threading import Lock
 # from collections import deque
 
-from DataTools.DataStructures import Result, is_result
-from ProcessingTools.Errors.ProcessingErrors import NonResultEnqueued
+from DataTools.DataStructures import is_result
+from ProcessingTools.Errors import NonResultEnqueued
 
 from queue import Queue
 

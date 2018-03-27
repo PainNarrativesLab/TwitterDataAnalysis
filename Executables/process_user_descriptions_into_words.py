@@ -74,8 +74,8 @@ if __name__ == '__main__':
     # create user cursor
     cursor = UserCursor(language='en')
 
-    logger.log("Starting user profile words parsing ")
+    logger.log("Start user profile words parsing ")
     run_test(control, cursor, 3)
-    logger.log("Finished user profile words parsing ")
+    logger.log("Finish user profile words parsing ")
     # run
     # process(control, cursor)

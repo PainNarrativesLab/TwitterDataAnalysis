@@ -17,7 +17,7 @@ import datetime
 from ProcessingTools.Listeners import IListener
 from ProcessingTools.QueueTools import IQueueHandler
 
-fake = Faker()
+
 
 import DataTools.TweetORM
 import DataTools.WordORM
@@ -29,6 +29,10 @@ Base = declarative_base()
 Base.metadata.create_all(engine)
 
 
+def fake_text():
+    return Faker().paragraph(nb_sentences=3, variable_nb_sentences=True, ext_word_list=None)
+
+
 class UserFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
         model = DataTools.TweetORM.Users
@@ -36,7 +40,9 @@ class UserFactory(factory.alchemy.SQLAlchemyModelFactory):
 
     userID = factory.Sequence(lambda n: n)
     screen_name = factory.Sequence(lambda n: u'User %d' % n)
-    description = fake.text()
+    description = factory.Sequence(lambda n: fake_text())
+
+    # description = factory.Sequence(lambda n: fake.text())
 
 
 class TweetFactory(factory.alchemy.SQLAlchemyModelFactory):
@@ -46,7 +52,7 @@ class TweetFactory(factory.alchemy.SQLAlchemyModelFactory):
 
     tweetID = factory.Sequence(lambda n: n)
     userID = factory.Sequence(lambda n: n)
-    tweetText = fake.paragraph(nb_sentences=3, variable_nb_sentences=True, ext_word_list=None)
+    tweetText =  factory.Sequence(lambda n: fake_text())
     lang = 'en'
 
 
@@ -56,7 +62,6 @@ class WordFactory(factory.alchemy.SQLAlchemyModelFactory):
         sqlalchemy_session = session  # the SQLAlchemy session object
 
     id = factory.Sequence(lambda n: n)
-    word = fake.word()
     inserted_at = datetime.datetime.now()
     updated_at = datetime.datetime.now()
 
