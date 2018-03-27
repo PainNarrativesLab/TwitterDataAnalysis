@@ -9,6 +9,7 @@ __author__ = 'adam'
 import DataTools.DataRepositories
 
 import ProcessingTools.Workers as Workers
+import Loggers.FileLoggers as Loggers
 from environment import *
 
 
@@ -36,11 +37,13 @@ class SaveListener(IListener):
 
 class LogListener(IListener):
 
-    def __init__(self):
-        Workers.SaveWorker.initialize_repository(DataTools.DataRepositories.WordRepository())
+    def __init__(self, logger=None):
+        if logger is None:
+            logger = Loggers.LogWriter()
+        self.logger = logger
 
     def handle(self, handler):
-        if PRINT_STEPS is True: print("SaveListener.handle called")
+        if PRINT_STEPS is True: print("LogListener.handle called")
         # assert(isinstance(handler, QueueTools.IQueueHandler))
 
         # pull a result off the queue

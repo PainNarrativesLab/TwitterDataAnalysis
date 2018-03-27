@@ -43,13 +43,13 @@ if __name__ == '__main__':
     ignoreListFilter.add_to_ignorelist( ignore.get_list( ) )
     ignoreListFilter.add_to_ignorelist( nltk.corpus.stopwords.words( 'english' ) )  # or do we keep them?
 
-    word_processor.add_to_filters( TextProcessors.Filters.UsernameFilter( ) )
-    word_processor.add_to_filters( TextProcessors.Filters.PunctuationFilter( ) )
-    word_processor.add_to_filters( TextProcessors.Filters.URLFilter( ) )
-    word_processor.add_to_filters( TextProcessors.Filters.NumeralFilter( ) )
-    word_processor.add_to_modifiers( TextProcessors.Modifiers.WierdBPrefixConverter( ) )
-    # processor.add_to_modifiers( TextProcessors.Modifiers.UnicodeConverter() )
-    word_processor.add_to_modifiers( TextProcessors.Modifiers.CaseConverter( ) )
+    word_processor.add_filters(TextProcessors.Filters.UsernameFilter())
+    word_processor.add_filters(TextProcessors.Filters.PunctuationFilter())
+    word_processor.add_filters(TextProcessors.Filters.URLFilter())
+    word_processor.add_filters(TextProcessors.Filters.NumeralFilter())
+    word_processor.add_modifiers(TextProcessors.Modifiers.WierdBPrefixConverter())
+    # processor.add_modifiers( TextProcessors.Modifiers.UnicodeConverter() )
+    word_processor.add_modifiers(TextProcessors.Modifiers.CaseConverter())
 
 
     for _ in range(0, 10):

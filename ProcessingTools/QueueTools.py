@@ -8,8 +8,11 @@ from environment import *
 # from threading import Lock
 # from collections import deque
 
+from DataTools.DataStructures import Result, is_result
+from ProcessingTools.Errors.ProcessingErrors import NonResultEnqueued
 
 from queue import Queue
+
 
 class ILockingQueue(object):
     """
@@ -27,11 +30,15 @@ class ILockingQueue(object):
         return self.queue.get()
 
 
-
-class IQueueHandler:
+class IQueueHandler(object):
     """Objects which contain a queue and registered listeners"""
-    def enque( self ): return NotImplementedError
-    def next( self ): return NotImplementedError
+    def enque( self ):
+        """Push the item onto the queue and call listeners"""
+        return NotImplementedError
+
+    def next( self ):
+        """Return the next item in the queue, removing it from the queue"""
+        return NotImplementedError
 
 
 class SaveQueueHandler( IQueueHandler, ILockingQueue ):
@@ -56,13 +63,19 @@ class SaveQueueHandler( IQueueHandler, ILockingQueue ):
         # print("SaveQueueHandler.next()")
         return self._get_next_from_queue()
 
+    def is_result_obj(self, obj ):
+        if is_result(obj):
+            return True
+        else:
+            raise NonResultEnqueued
+
     def register_listener(self, listener):
         """
         Add a new listener object to the list which will have their
         handle method called every time a new item is pushed onto the queue
         """
         if PRINT_STEPS is True: print("SaveQueueHandler.register_listener()")
-        #check type
+        # check type
         # assert(isinstance(listener, Listeners.IListener))
         self.listeners.append(listener)
 

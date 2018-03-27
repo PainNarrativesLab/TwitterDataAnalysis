@@ -1,6 +1,8 @@
 """
 Created by adam on 11/6/16
 """
+from DataTools import TweetORM
+
 __author__ = 'adam'
 import random
 
@@ -23,6 +25,14 @@ def makeTestTweetString( numWords=4, numSent=4 ):
             text += " s%sw%s" % (s, w)
         text += '. '
     return text.strip( )
+
+
+def TweetObjectFactory():
+    """Creates a tweet object"""
+    t = TweetORM.Tweet()
+    t.tweetText = makeTestTweetString()
+    t.tweetID = fake.ean13()
+    return t
 
 
 def makeExpectedResult( numWords=4, numSent=4, tweetId=None ):
@@ -73,13 +83,13 @@ def initialize_processor( ):
     # or do we keep them?
     ignoreListFilter.add_to_ignorelist( nltk.corpus.stopwords.words( 'english' ) )
 
-    processor.add_to_filters( ignoreListFilter )
-    processor.add_to_filters( TextProcessors.Filters.UsernameFilter( ) )
+    processor.add_filters(ignoreListFilter)
+    processor.add_filters(TextProcessors.Filters.UsernameFilter())
 
-    processor.add_to_filters( TextProcessors.Filters.PunctuationFilter( ) )
-    processor.add_to_filters( TextProcessors.Filters.URLFilter( ) )
-    processor.add_to_filters( TextProcessors.Filters.NumeralFilter( ) )
-    processor.add_to_modifiers( TextProcessors.Modifiers.CaseConverter( ) )
+    processor.add_filters(TextProcessors.Filters.PunctuationFilter())
+    processor.add_filters(TextProcessors.Filters.URLFilter())
+    processor.add_filters(TextProcessors.Filters.NumeralFilter())
+    processor.add_modifiers(TextProcessors.Modifiers.CaseConverter())
 
     return processor
 

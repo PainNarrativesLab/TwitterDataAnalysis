@@ -1,47 +1,111 @@
 """
+Each of these tools handles manages the process of
+taking a stored tweet or user object and storing its constituent words
+(from content and description, respectively) in the
+ database.
+
+ Each can apply various filters and transformations.
+ These do not directy saving results. That is the
+  job of the que handler
+
 Created by adam on 11/6/16
 """
 __author__ = 'adam'
 
-from ConstantsAndUtilities import *
-from DataTools.DataStructures import *
 import DataTools.TweetORM
+from DataTools.DataStructures import Result, is_result, make_tweet_result, make_user_result
+from ProcessingTools.QueueTools import IQueueHandler
+from TextProcessors import Tokenizers, Processors
 
-from ProcessingTools.QueueTools import *
-from TextProcessors import Tokenizers
 
+class IProcessingController(object):
 
-class TweetProcessingController(object):
-    """Handles processing of one tweet object at a time."""
-
-    def __init__(self, SaveQueueHandler):
+    def __init__(self, saveQueueHandler: IQueueHandler):
         """
-        SentenceTokenizer: Utility class with a process method which takes a tweet text and returns a list of sentences
-        DbQueueHandler: Service class which puts the word in the queue to be saved, so that's not a bottleneck
+        :type saveQueueHandler: Service class which puts the word in the queue to be saved, so that's not a bottleneck
         """
+        self.count_of_processed = 0
         self.sentence_tokenizer = Tokenizers.SentenceTokenizer()
         self.word_tokenizer = Tokenizers.WordTokenizer()
-        self.QueueHandler = SaveQueueHandler
+        self.QueueHandler = saveQueueHandler
         self._word_processors = []
 
-    def load_word_processor(self, processor):
-        """Add something which acts on individual words to the stack that will run on each word from the tweet"""
+    def load_word_processor(self, processor: Processors.IProcessor):
+        """
+        Add something which acts on individual words
+         to the stack that will run on each word from the tweet
+         :type processor: Processors.IProcessor
+         """
         self._word_processors.append(processor)
         self._word_processors = list(set(self._word_processors))
 
-    def _add_result_to_queue(self, result):
-        """Enques the result"""
-        assert (isinstance(result, Result))
-        self.QueueHandler.enque(result)
+    def _run_word_processors(self, word: str):
+        """Runs each processor in the stack on the string"""
+        if len(self._word_processors) > 0:
+            for wp in self._word_processors:
+                word = wp.process(word)
+        return word
 
-    def make_and_enque_result(self, sentenceIndex, wordIndex, text, tweetId):
-        """Makes the result and hands it off to the queue handler"""
+    def make_result(self, sentenceIndex: int, wordIndex: int, text: str, objId: int):
+        """Since the older version wants tweet ids, this is the default
+        for all new uses to inherit.
+        :param objId: The user or tweet's id
+        :param text: The profile or tweet text
+        :param wordIndex: The ordinal position of the word in the sentence
+        :param sentenceIndex: The ordinal position of the sentence in the profile
+      """
+        raise NotImplementedError
+
+    def make_and_enque_result(self, sentenceIndex: int, wordIndex: int, text: str, objId: int):
+        """Makes the result and hands it off to the queue handler
+        :param objId: The user or tweet's id
+        :param text: The profile or tweet text
+        :param wordIndex: The ordinal position of the word in the sentence
+        :param sentenceIndex: The ordinal position of the sentence in the profile
+        """
         if text is not None:
-            result = make_result(sentenceIndex, wordIndex, text, tweetId)
+            result = self.make_result(sentenceIndex, wordIndex, text, objId)
             # print(result)
-            self._add_result_to_queue(result)
+            self.QueueHandler.enque(result)
 
-    def process(self, tweets):
+    def _processSentence(self, sentenceIndex: int, sentence: str, objId: int):
+        """
+        Runs word tokenization (with whatever word processors are loaded)
+        on the given sentence and then enques the results.
+        :param objId: The user or tweet's id
+        :param sentence: The sentence to process
+        :param sentenceIndex: The ordinal position of the sentence in the text
+        """
+        [self.make_and_enque_result(sentenceIndex, idx, self._run_word_processors(word), objId) for idx, word in
+         enumerate(self.word_tokenizer.process(sentence))]
+
+    def set_notice_logger(self, logger):
+        self.notice_logger = logger
+
+    def set_error_logger(self, logger):
+        self.error_logger = logger
+
+    def log_event(self, message):
+        try:
+            self.notice_logger.log(message)
+        except:
+            print(message)
+
+
+class TweetProcessingController(IProcessingController):
+    """Handles processing of one tweet object at a time."""
+
+    def __init__(self, saveQueueHandler: IQueueHandler):
+        """
+        :type saveQueueHandler: Service class which puts the word in the queue to be saved, so that's not a bottleneck
+        """
+        super().__init__(saveQueueHandler)
+
+    def make_result(self, sentenceIndex: int, wordIndex: int, text: str, objId: int):
+        """Overwrites parent so that used old version for tweet id having Result"""
+        return make_tweet_result(sentenceIndex, wordIndex, text, objId)
+
+    def process(self, tweets: list):
         """Runs the string processing on a single tweet or list of tweets and enques the result for saving"""
 
         # wrap a single object in a list
@@ -53,7 +117,7 @@ class TweetProcessingController(object):
                 text = str(tweet.tweetText)
                 tweetId = tweet.tweetID
             else:
-                raise ValueError
+                raise ValueError("Non tweet object passed to processor")
 
             # Split the tweet into sentences
             sentences = self.sentence_tokenizer.process(text)
@@ -62,78 +126,46 @@ class TweetProcessingController(object):
             [self._processSentence(sentenceIndex, sentence, tweetId) for sentenceIndex, sentence in
              enumerate(sentences)]
 
-    def _run_word_processors(self, word):
-        """Runs each processor in the stack on the string"""
-        if len(self._word_processors) > 0:
-            for wp in self._word_processors:
-                word = wp.process(word)
-        return word
-
-    def _processSentence(self, sentenceIndex, sentence, tweetId):
-        # word tokenize
-        [self.make_and_enque_result(sentenceIndex, idx, self._run_word_processors(word), tweetId) for idx, word in
-         enumerate(self.word_tokenizer.process(sentence))]
+    # def _processSentence(self, sentenceIndex, sentence, tweetId):
+    #     # word tokenize
+    #     [self.make_and_enque_result(sentenceIndex, idx, self._run_word_processors(word), tweetId) for idx, word in
+    #      enumerate(self.word_tokenizer.process(sentence))]
 
 
-class UserProcessingController(object):
+class UserProcessingController(IProcessingController):
     """Handles processing of one user at a time."""
 
-    def __init__(self, SaveQueueHandler):
+    def __init__(self, saveQueueHandler: IQueueHandler):
         """
-        SentenceTokenizer: Utility class with a process method which takes a tweet text and returns a list of sentences
-        DbQueueHandler: Service class which puts the word in the queue to be saved, so that's not a bottleneck
+        :type saveQueueHandler: Service class which puts the word in the queue to be saved, so that's not a bottleneck
         """
-        self.sentence_tokenizer = Tokenizers.SentenceTokenizer()
-        self.word_tokenizer = Tokenizers.WordTokenizer()
-        self.QueueHandler = SaveQueueHandler
-        self._word_processors = []
+        super().__init__(saveQueueHandler)
 
-    def load_word_processor(self, processor):
-        """Add something which acts on individual words to the stack that will run on each word from the tweet"""
-        self._word_processors.append(processor)
-        self._word_processors = list(set(self._word_processors))
+    def make_result(self, sentenceIndex: int, wordIndex: int, text: str, objId: int):
+        return make_user_result(sentenceIndex, wordIndex, text, objId)
 
-    def _add_result_to_queue(self, result):
-        """Enques the result"""
-        assert (isinstance(result, Result))
-        self.QueueHandler.enque(result)
-
-    def make_and_enque_result(self, sentenceIndex, wordIndex, text, userId):
-        """Makes the result and hands it off to the queue handler"""
-        if text is not None:
-            result = make_result(sentenceIndex, wordIndex, text, userId)
-            # print(result)
-            self._add_result_to_queue(result)
-
-    def process(self, users):
-        """Runs the string processing on a single tweet or list of tweets and enques the result for saving"""
-
+    def process(self, users: list):
+        """Runs the string processing on a user's profile and
+        enques the result for saving
+        :param users: list of DataTools.TweetORM.Users or single User
+        """
         # wrap a single object in a list
         users = [users] if isinstance(users, DataTools.TweetORM.Users) else users
-
         for user in users:
-            # This way we can use either a list of strings or tweet objects
             if isinstance(user, DataTools.TweetORM.Users):
-                text = str(user.profile)
+                text = str(user.description)
                 userId = user.userID
             else:
+                print(type(user))
                 raise ValueError
 
-            # Split the tweet into sentences
+            # Split the profile into sentences
             sentences = self.sentence_tokenizer.process(text)
 
             # process sentences
             [self._processSentence(sentenceIndex, sentence, userId) for sentenceIndex, sentence in
              enumerate(sentences)]
 
-    def _run_word_processors(self, word):
-        """Runs each processor in the stack on the string"""
-        if len(self._word_processors) > 0:
-            for wp in self._word_processors:
-                word = wp.process(word)
-        return word
+            self.count_of_processed += 1
 
-    def _processSentence(self, sentenceIndex, sentence, userId):
-        # word tokenize
-        [self.make_and_enque_result(sentenceIndex, idx, self._run_word_processors(word), userId) for idx, word in
-         enumerate(self.word_tokenizer.process(sentence))]
+        self.log_event("Processed %s users" % self.count_of_processed)

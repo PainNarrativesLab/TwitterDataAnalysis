@@ -124,7 +124,7 @@ class UserCursor(Cursor):
         :param limit: The maximum number to retrieve. If unset, will iterate over all tweets
         """
         super().__init__()
-        self.lock = threading.Lock()
+        # self.lock = threading.Lock()
         self._process_kwargs(kwargs)
 
         # load the db connection info
@@ -168,7 +168,7 @@ class UserCursor(Cursor):
     def next_user(self):
         """Returns the next user object from the db"""
         # return self.tweet_iterator.next()
-        with self.lock:
-            return self.next()
-            # return next(self.item_iterator)
+        # with self.lock:
+        return self.next()
+        # return next(self.item_iterator)
 

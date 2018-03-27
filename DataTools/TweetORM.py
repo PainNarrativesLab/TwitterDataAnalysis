@@ -3,18 +3,13 @@ This contains classes for loading tweet data
 
 In the process of being converted to use sqlalchemy
 """
-import os
-import sys
 
-import sqlalchemy
 from sqlalchemy import Table, Column, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-# connecting to db
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 from DataTools import DataConnections
+
+# connecting to db
 
 # Base class that maintains the catalog of tables and classes in db
 Base = declarative_base()
@@ -82,14 +77,13 @@ tweetsXtags = Table('tweetsXtags', Base.metadata,
                     Column('tagID', Integer, ForeignKey('hashtags.tagID'))
                     )
 
-# Create all tables in the engine. This is equivalent to "Create Table"
-# statements in raw SQL.
-# Base.metadata.create_all(sqlite_engine)
 
 def create_db_tables(seed=False):
-    """Creates tables in the database"""
+    """Creates tables in the database
+    Create all tables in the engine.
+    This is equivalent to "Create Table" statements in raw SQL.
+    """
     engine = DataConnections.initialize_engine()
     # create the tables
     Base.metadata.create_all(engine)
     # metadata = MetaData( )
-

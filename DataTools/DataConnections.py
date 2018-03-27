@@ -3,52 +3,49 @@ Created by adam on 11/6/16
 """
 __author__ = 'adam'
 
-import os
-import sys
 import xml.etree.ElementTree as ET
 
 import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker
 
 from environment import *
 
-
 # Base class that maintains the catalog of tables and classes in db
-Base = declarative_base( )
+Base = declarative_base()
 
 
-def initialize_engine( ):
+def initialize_engine():
     if ENGINE != None:
-        method = { 'sqlite': _create_sqlite_engine,
-                   'mysql': _create_mysql_engine,
-                   'mysql_test': _create_mysql_test_engine
-                   }.get( ENGINE )
+        method = {'sqlite': _create_sqlite_engine,
+                  'mysql': _create_mysql_engine,
+                  'mysql_test': _create_mysql_test_engine
+                  }.get(ENGINE)
 
-        engine = method( )
+        engine = method()
         # Base.metadata.create_all( engine )
         return engine
     raise ValueError
 
 
-def _create_sqlite_engine( ):
+def _create_sqlite_engine():
     print("creating connection: sqlite ")
-    return create_engine( 'sqlite:///:memory:', echo=False )
+    return create_engine('sqlite:///:memory:', echo=False)
 
 
 def _create_mysql_engine():
-    print( "creating connection: mysql " )
-    return create_engine( 'mysql://root:''@localhost:3306/%s' % DB )
+    print("creating connection: mysql ")
+    return create_engine('mysql://root:''@localhost:3306/%s' % DB)
 
 
-
-def _create_mysql_test_engine( ):
+def _create_mysql_test_engine():
     if DB is 'twitter_words':
-        print( "creating connection: mysql twitter_wordsTEST " )
-        return create_engine( 'mysql://root:''@localhost:3306/twitter_wordsTEST' )
-    print( "creating connection: mysql test_td" )
-    return create_engine( "mysql+mysqlconnector://root:@localhost/test_td" )
+        print("creating connection: mysql twitter_wordsTEST ")
+        return create_engine('mysql://root:''@localhost:3306/twitter_wordsTEST')
+    print("creating connection: mysql test_td")
+    return create_engine("mysql+mysqlconnector://root:@localhost/test_td")
+
 
 class Connection(object):
     """
@@ -124,6 +121,7 @@ class SqliteConnection(Connection):
     Note that does not actually populate the database. That
     requires a call to: Base.metadata.create_all(SqliteConnection)
     """
+
     def __init__(self):
         super().__init__()
 
@@ -145,7 +143,7 @@ class BaseDAO(object):
     global_session = None
 
     def __init__(self, engine):
-        assert(isinstance(engine, sqlalchemy.engine.base.Engine))
+        assert (isinstance(engine, sqlalchemy.engine.base.Engine))
         self.engine = engine
         if BaseDAO.global_session is None:
             BaseDAO._create_session(engine)
@@ -155,7 +153,7 @@ class BaseDAO(object):
         """
         Instantiates the sessionmaker factory into the global_session attribute
         """
-        BaseDAO.global_session =  sqlalchemy.orm.sessionmaker(bind=engine)
+        BaseDAO.global_session = sqlalchemy.orm.sessionmaker(bind=engine)
 
 
 class DAO(BaseDAO):
@@ -163,14 +161,15 @@ class DAO(BaseDAO):
     example instance. Need to use metaclass to ensure that
     all instances of DAO do this
     """
+
     def __init__(self, engine):
-        assert(isinstance(engine, sqlalchemy.engine.base.Engine))
+        assert (isinstance(engine, sqlalchemy.engine.base.Engine))
         super().__init__(engine)
         self.session = BaseDAO.global_session()
 
 
 if __name__ == '__main__':
     # connect to db
-    engine = initialize_engine( )
+    engine = initialize_engine()
     # DataTools's handle to database at global level
-    Session = sessionmaker( bind=engine )
+    Session = sessionmaker(bind=engine)

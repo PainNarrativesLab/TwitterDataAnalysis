@@ -8,9 +8,28 @@ __author__ = 'adam'
 
 from collections import namedtuple
 
-Result = namedtuple('Result', ['sentence_index', 'word_index', 'text', 'tweet_id'])
+Result = namedtuple('Result', ['sentence_index', 'word_index', 'text', 'id', 'type'])
+#
+# # This should become the default result since it can
+# # be used for tweets or users
+# GeneralResult = namedtuple('GeneralResult', ['sentence_index', 'word_index', 'text', 'obj_id'])
 
-def make_result(sentenceIndex, wordIndex, text, tweetId ):
+
+def is_result(r):
+    """Tests for whether the item is either a Result or GeneralResult"""
+    if isinstance(r, Result): # or isinstance(r, GeneralResult):
+        return True
+    return False
+
+
+def make_tweet_result(sentenceIndex, wordIndex, text, tweetId):
     """Creates and returns a Result object"""
     if text is not None:
-        return Result( sentenceIndex, wordIndex, text, tweetId )
+        if tweetId is not None:
+            return Result(sentenceIndex, wordIndex, text, tweetId, 'tweet')
+
+
+def make_user_result(sentenceIndex, wordIndex, text, userId):
+    """Creates and returns a Result object"""
+    if text is not None:
+        return Result(sentenceIndex, wordIndex, text, userId, 'user')

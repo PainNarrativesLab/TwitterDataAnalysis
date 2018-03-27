@@ -9,8 +9,8 @@ import sys
 ROOT = os.getenv("HOME")
 BASE = '%s/Dropbox/PainNarrativesLab' % ROOT
 
-sys.path.append('%s/Dropbox/iPythonFiles/BaseClasses' % ROOT) #the directory that contains various common custom classes
-# sys.path.append('%s/TextTools/ProcessingTools' % BASE) #the directory that contains tools for filtering and manipulating text
+# the directory that contains various common custom classes
+sys.path.append('%s/Dropbox/iPythonFiles/BaseClasses' % ROOT)
 
 DATAFOLDER = BASE + '/Data'
 MAPPING_PATH = "%s/TwitterDataAnalysis/mappings" % BASE
@@ -23,6 +23,8 @@ TWITTER_MINING_PATH = "%s/TwitterMining/" % BASE
 sys.path.append(TEXT_TOOLS_PATH)
 sys.path.append('%s/TextTools/TextProcessors' % BASE)
 
+# Logging
+LOG_FOLDER_PATH = "%s/Desktop/TwitterDataAnalysisLogs" %BASE
 
 # import importlib.util
 # spec = importlib.util.spec_from_file_location("WordBagMakers.WordBagMaker", TEXT_TOOLS_PATH)
@@ -31,7 +33,10 @@ sys.path.append('%s/TextTools/TextProcessors' % BASE)
 # from importlib.machinery import SourceFileLoader
 # WBM = SourceFileLoader("WordBagMakers.WordBagMaker", "%s/WordBagMakers.py" % TEXT_TOOLS_PATH).load_module()
 
-ENGINE = 'mysql_test' #'sqlite'
+ENGINE = 'mysql_test'
+# ENGINE = 'sqlite'
+
+# The name of the database to connect to
 DB = 'twitter_words'
 # DB = 'twitter_data'
 

@@ -23,7 +23,7 @@ class StringProcessingWorkerTest(unittest.TestCase):
         self.assertEqual(obj.cursor, 'cursor', 'cursor available to child')
         self.assertTrue(type(obj.processor) == ProcessingControllers.TweetProcessingController,
                         'processor available to child')
-
+    @unittest.skip
     def test_cursor_behaves_as_expected(self):
         cursor = Cursors.TweetCursor()
         queue = QueueTools.IQueueHandler()
@@ -37,6 +37,7 @@ class StringProcessingWorkerTest(unittest.TestCase):
         self.assertIsInstance(r2, TweetORM.Tweet)
         self.assertNotEqual(r1, r2, 'calls to different instances return different results. The generator is advancing')
 
+    @unittest.skip
     def test_threaded_cursor_behaves_as_expected(self):
         # Load cursor for tweet ids
         threads = []

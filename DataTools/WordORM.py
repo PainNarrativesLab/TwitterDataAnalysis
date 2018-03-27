@@ -37,10 +37,11 @@ class StandardizedWord(Base):
 
 
 class WordMapping(Base):
-    """Mapping of the word's position within the tweet"""
+    """Mapping of the word's position within the tweet or user description"""
     __tablename__ = 'word_map'
     id = Column(Integer, primary_key=True, autoincrement=True)
     tweet_id = Column(BigInteger)
+    user_id = Column(BigInteger)
     word_id = Column(Integer, ForeignKey('words.id'))
     word = relationship("Word")
     sentence_index = Column(Integer, primary_key=False, autoincrement=False)

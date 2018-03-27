@@ -82,13 +82,13 @@ def run_tweet_processing_benchmarking_test(results_file, RUNS, MAX_THREADS, STAR
     ignoreDawgFilter.add_to_ignorelist(ignore.get_list())
     ignoreDawgFilter.add_to_ignorelist(nltk.corpus.stopwords.words('english'))  # or do we keep them?
 
-    word_processor.add_to_filters(Filters.UsernameFilter())
-    word_processor.add_to_filters(Filters.PunctuationFilter())
-    word_processor.add_to_filters(Filters.URLFilter())
-    word_processor.add_to_filters(Filters.NumeralFilter())
-    word_processor.add_to_modifiers(TextProcessors.Modifiers.WierdBPrefixConverter())
-    # processor.add_to_modifiers( TextProcessors.Modifiers.UnicodeConverter() )
-    word_processor.add_to_modifiers(TextProcessors.Modifiers.CaseConverter())
+    word_processor.add_filters(Filters.UsernameFilter())
+    word_processor.add_filters(Filters.PunctuationFilter())
+    word_processor.add_filters(Filters.URLFilter())
+    word_processor.add_filters(Filters.NumeralFilter())
+    word_processor.add_modifiers(TextProcessors.Modifiers.WierdBPrefixConverter())
+    # processor.add_modifiers( TextProcessors.Modifiers.UnicodeConverter() )
+    word_processor.add_modifiers(TextProcessors.Modifiers.CaseConverter())
 
     # Load past results as a dataframe. We will write our run results to this fiile
     benchmarks = pd.read_csv(results_file)
@@ -109,9 +109,9 @@ def run_tweet_processing_benchmarking_test(results_file, RUNS, MAX_THREADS, STAR
                 # Add regular or dawg filter
                 if DATASTRUCTURE is 'dawg':
                     print('dawg')
-                    word_processor.add_to_filters(ignoreDawgFilter)
+                    word_processor.add_filters(ignoreDawgFilter)
                 else:
-                    word_processor.add_to_filters(ignoreListFilter)
+                    word_processor.add_filters(ignoreListFilter)
 
                 # Initialize everything we need
                 # Workers.StringProcessingWorker.initialize( cursor, Queue, word_processor )
