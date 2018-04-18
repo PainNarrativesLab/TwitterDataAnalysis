@@ -14,7 +14,8 @@ class NonResultEnqueued(ProcessingError):
         self.text = """A type of object other than Result or UserResult has beenplaced in the queue"""
 
 
-
+class AllResponsesComplete( Exception ):
+    pass
 
 if __name__ == '__main__':
     pass

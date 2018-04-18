@@ -4,50 +4,105 @@ Created by adam on 11/6/16
 __author__ = 'adam'
 
 import xml.etree.ElementTree as ET
+from contextlib import contextmanager
 
 import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+import environment
+from DataTools.WordORM import create_db_tables
 from environment import *
 
 # Base class that maintains the catalog of tables and classes in db
 Base = declarative_base()
 
 
-def initialize_engine():
-    if ENGINE != None:
-        method = {'sqlite': _create_sqlite_engine,
-                  'mysql': _create_mysql_engine,
-                  'mysql_test': _create_mysql_test_engine
-                  }.get(ENGINE)
+@contextmanager
+def session_scope():
+    """
+    Provide a transactional scope around a series of operations.
+
+    We need a single db connection instance for all of the
+    server processes. Otherwise, we will have trouble with
+    concurrent writes to the file.
+    That's what we create here
+
+    usage:
+        with sesssion_scope() as session:
+            ...do stuff...
+    """
+    try:
+        engine = initialize_engine( environment.ENGINE )
+        # DataTools's handle to database at global level
+        Session = sessionmaker( bind=engine )
+
+        if environment.ENGINE == 'sqlite' or environment.ENGINE == 'sqlite-file':
+            # We need to get the db into memory when start up
+            # environmental variables will determine details of the
+            # db
+            create_db_tables( engine )
+
+        session = Session()
+        yield session
+        session.commit()
+
+    except:
+        session.rollback()
+        raise
+
+    finally:
+        session.close()
+
+
+def initialize_engine( conn=environment.ENGINE ):
+    """Creates the relevant connection engine"""
+    if conn is not None:
+        method = { 'sqlite': _create_sqlite_engine,
+                   'sqlite-file': _create_sqlite_file_engine,
+                   'mysql': _create_mysql_engine,
+                   'mysql_test': _create_mysql_test_engine
+                   }.get( conn )
 
         engine = method()
         # Base.metadata.create_all( engine )
         return engine
+
     raise ValueError
 
 
-def _create_sqlite_engine():
-    print("creating connection: sqlite ")
-    return create_engine('sqlite:///:memory:', echo=False)
+def _create_sqlite_engine( echo=False ):
+    """Creates an in-memory sqlite db engine"""
+    conn = 'sqlite:///:memory:'
+    print( "creating connection: %s " % conn )
+    return create_engine( conn, echo=False )
+
+
+def _create_sqlite_file_engine( conn=SQLITE_FILE_CONNECTION_STRING, echo=True ):
+    """Creates an sqlite db engine using the file defined in SQLITE_FILE"""
+    # conn = 'sqlite:////%s' % file_path
+    print( "creating connection: %s " % conn )
+    return create_engine( conn, echo=echo )
 
 
 def _create_mysql_engine():
-    print("creating connection: mysql ")
-    return create_engine('mysql://root:''@localhost:3306/%s' % DB)
+    print( "creating connection: mysql " )
+    return create_engine( 'mysql://root:''@localhost:3306/%s' % DB )
 
 
 def _create_mysql_test_engine():
-    if DB is 'twitter_words':
-        print("creating connection: mysql twitter_wordsTEST ")
-        return create_engine('mysql://root:''@localhost:3306/twitter_wordsTEST')
-    print("creating connection: mysql test_td")
-    return create_engine("mysql+mysqlconnector://root:@localhost/test_td")
+    print( "creating connection: mysql %s" % DB )
+    if DB is 'twitter_wordsTEST':
+        print( "creating connection: mysql twitter_wordsTEST " )
+        return create_engine( 'mysql://root:''@localhost:3306/twitter_wordsTEST' )
+
+    return create_engine( "mysql://root:''@localhost:3306/%s" % DB )
+
+    # return create_engine("mysql+mysqlconnector://root:@localhost/)
 
 
-class Connection(object):
+class Connection( object ):
     """
     Parent class for creating sqlalchemy engines, session objects,
     and other db interaction stuff behind the scenes from a file
@@ -64,7 +119,7 @@ class Connection(object):
         _db_name: String name of db
     """
 
-    def __init__(self, credential_file=None):
+    def __init__( self, credential_file=None ):
         """
         Loads db connection credentials from file and returns a mysql sqlalchemy engine
         Args:
@@ -76,60 +131,75 @@ class Connection(object):
         self._load_credentials()
         self._make_engine()
 
-    def _load_credentials(self):
+    def _load_credentials( self ):
         """
         Opens the credentials file and loads the attributes
         """
         if self._credential_file is not None:
-            credentials = ET.parse(self._credential_file)
-            self._server = credentials.find('db_host').text
-            self._port = credentials.find('db_port').text
+            credentials = ET.parse( self._credential_file )
+            self._server = credentials.find( 'db_host' ).text
+            self._port = credentials.find( 'db_port' ).text
             if self._port is not None:
-                self._port = int(self._port)
-            self._username = credentials.find('db_user').text
-            self._db_name = credentials.find('db_name').text
-            self._password = credentials.find('db_password').text
+                self._port = int( self._port )
+            self._username = credentials.find( 'db_user' ).text
+            self._db_name = credentials.find( 'db_name' ).text
+            self._password = credentials.find( 'db_password' ).text
 
-    def _make_engine(self):
+    def _make_engine( self ):
         """
         Creates the sqlalchemy engine and stores it in self.engine
         """
         raise NotImplementedError
 
 
-class MySqlConnection(Connection):
+class MySqlConnection( Connection ):
     """
     Uses the MySQL-Connector-Python driver (pip install MySQL-Connector-Python driver)
     """
 
-    def __init__(self, credential_file):
+    def __init__( self, credential_file ):
         self._driver = '+mysqlconnector'
-        super(__class__, self).__init__(credential_file)
+        super( __class__, self ).__init__( credential_file )
 
-    def _make_engine(self):
+    def _make_engine( self ):
         if self._port:
             server = "%s:%s" % (self._server, self._port)
         else:
             server = self._server
         self._dsn = "mysql%s://%s:%s@%s/%s" % (self._driver, self._username, self._password, server, self._db_name)
-        self.engine = create_engine(self._dsn)
+        self.engine = create_engine( self._dsn )
 
 
-class SqliteConnection(Connection):
+class SqliteFileConnection( Connection ):
+    """
+    Makes a connection to a file-based sqlite database.
+    Note that does not actually populate the database. That
+    requires a call to: Base.metadata.create_all(SqliteConnection)
+    """
+
+    def __init__( self ):
+        super().__init__()
+
+    def _make_engine( self ):
+        self.engine = create_engine( 'sqlite:%s' % SQLITE_FILE, echo=False )
+
+
+class SqliteConnection( Connection ):
     """
     Makes a connection to an in memory sqlite database.
     Note that does not actually populate the database. That
     requires a call to: Base.metadata.create_all(SqliteConnection)
     """
 
-    def __init__(self):
+    def __init__( self ):
         super().__init__()
 
-    def _make_engine(self):
-        self.engine = create_engine('sqlite:///:memory:', echo=True)
+    def _make_engine( self ):
+        self.engine = _create_sqlite_engine()
+        # create_engine( 'sqlite:///:memory:', echo=True )
 
 
-class BaseDAO(object):
+class BaseDAO( object ):
     """
     Parent class for database interactions.
     The parent will hold the single global connection (i.e. sqlalchemy Session)
@@ -142,34 +212,35 @@ class BaseDAO(object):
     """
     global_session = None
 
-    def __init__(self, engine):
-        assert (isinstance(engine, sqlalchemy.engine.base.Engine))
+    def __init__( self, engine ):
+        assert (isinstance( engine, sqlalchemy.engine.base.Engine ))
         self.engine = engine
         if BaseDAO.global_session is None:
-            BaseDAO._create_session(engine)
+            BaseDAO._create_session( engine )
 
     @staticmethod
-    def _create_session(engine):
+    def _create_session( engine ):
         """
         Instantiates the sessionmaker factory into the global_session attribute
         """
-        BaseDAO.global_session = sqlalchemy.orm.sessionmaker(bind=engine)
+        BaseDAO.global_session = sqlalchemy.orm.sessionmaker( bind=engine )
 
 
-class DAO(BaseDAO):
+class DAO( BaseDAO ):
     """
     example instance. Need to use metaclass to ensure that
     all instances of DAO do this
     """
 
-    def __init__(self, engine):
-        assert (isinstance(engine, sqlalchemy.engine.base.Engine))
-        super().__init__(engine)
+    def __init__( self, engine ):
+        assert (isinstance( engine, sqlalchemy.engine.base.Engine ))
+        super().__init__( engine )
         self.session = BaseDAO.global_session()
 
 
 if __name__ == '__main__':
-    # connect to db
-    engine = initialize_engine()
-    # DataTools's handle to database at global level
-    Session = sessionmaker(bind=engine)
+    pass
+    # # connect to db
+    # engine = initialize_engine()
+    # # DataTools's handle to database at global level
+    # Session = sessionmaker( bind=engine )

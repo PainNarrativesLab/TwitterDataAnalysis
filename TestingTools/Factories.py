@@ -6,21 +6,20 @@ Created by adam on 3/21/18
 """
 __author__ = 'adam'
 
+import datetime
+import random
+
 import factory
 from faker import Faker
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-import datetime
-
-from ProcessingTools.Listeners import IListener
-from ProcessingTools.QueueTools import IQueueHandler
-
-
-
+import DataTools.DataStructures
 import DataTools.TweetORM
 import DataTools.WordORM
+from ProcessingTools.Listeners import IListener
+from ProcessingTools.QueueTools import IQueueHandler
 
 engine = create_engine('sqlite://')
 session = scoped_session(sessionmaker(bind=engine))
@@ -66,6 +65,7 @@ class WordFactory(factory.alchemy.SQLAlchemyModelFactory):
     updated_at = datetime.datetime.now()
 
 
+
 class DummyQueueFactory(IQueueHandler):
     def __init__(self):
         super().__init__()
@@ -91,3 +91,12 @@ class DummyIListenerFactory(IListener):
         self.handle_call_count += 1
         self.queue.append(handler)
 
+
+def TweetResultFactory():
+    return DataTools.DataStructures.make_tweet_result( random.randint( 0, 10 ), random.randint( 0, 10 ), Faker().word(),
+                                                       random.randint( 0, 99999999999 ) )
+
+
+def UserResultFactory():
+    return DataTools.DataStructures.make_user_result( random.randint( 0, 10 ), random.randint( 0, 10 ), Faker().word(),
+                                                      random.randint( 0, 99999999999 ) )

@@ -1,12 +1,13 @@
 """
 Created by adam on 3/26/18
 """
+
 __author__ = 'adam'
 import os
 
 from logbook import FileHandler
-from Loggers.ILogger import ILogger
 
+from Loggers.ILogger import ILogger
 
 BASE = os.getenv("HOME")
 # todo restore environment
@@ -30,6 +31,8 @@ class FileWritingLogger(ILogger):
         self._process_kwargs(kwargs)
         super().__init__()
 
+    def add_break( self ):
+        self.log( "=====================================================" )
 
 # class DBEventLogger(LogWriter):
 #     """

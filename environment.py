@@ -24,7 +24,17 @@ sys.path.append(TEXT_TOOLS_PATH)
 sys.path.append('%s/TextTools/TextProcessors' % BASE)
 
 # Logging
-LOG_FOLDER_PATH = "%s/Desktop/TwitterDataAnalysisLogs" %BASE
+LOG_FOLDER_PATH = "%s/Desktop/TwitterDataAnalysisLogs" % ROOT
+SQLITE_FILE = '%s/wordmapping.db' % LOG_FOLDER_PATH
+SQLITE_FILE_CONNECTION_STRING = 'sqlite:////%s' % SQLITE_FILE
+
+# Database server url
+DB_PORT = 8999
+DB_URL = "http://127.0.0.1:%s" % DB_PORT
+
+# How many transactions to queue before
+# flushing / committing to the db
+DB_QUEUE_SIZE = 1000
 
 # import importlib.util
 # spec = importlib.util.spec_from_file_location("WordBagMakers.WordBagMaker", TEXT_TOOLS_PATH)
@@ -35,9 +45,10 @@ LOG_FOLDER_PATH = "%s/Desktop/TwitterDataAnalysisLogs" %BASE
 
 ENGINE = 'mysql_test'
 # ENGINE = 'sqlite'
+# ENGINE = 'sqlite-file'
 
 # The name of the database to connect to
-DB = 'twitter_words'
+DB = 'twitter_wordsTEST'
 # DB = 'twitter_data'
 
 # Whether this is a test
@@ -53,5 +64,4 @@ PRINT_STEPS = False
 
 # default tweet id to use in dev
 TESTING_TWEET_ID = 123456789
-
 

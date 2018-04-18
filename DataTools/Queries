@@ -1,0 +1,50 @@
+-- This contains functions which execute
+--  common queries, given an DAO to execute it upon
+-- Created by adam on 4/10/18
+
+
+-- Gets the id of words immediately preceeding the given word
+  SELECT a.word_id 
+  FROM word_map a JOIN (
+    SELECT m.user_id AS uid, 
+          m.word_index - 1 AS wix 
+    FROM word_map m 
+    WHERE m.word_id = (SELECT w.id FROM words w WHERE w.word = %s)
+    ) AS b 
+  ON (a.user_id = b.uid)
+  WHERE a.word_index = b.wix
+
+
+-- get_map_records_for_word
+    SELECT *
+    FROM word_map
+    WHERE word_id = (
+      SELECT w.id
+      FROM words w
+      WHERE w.word = '%s'
+    )
+
+
+
+-- Get the actual word string for immediately preceeding words
+SELECT ww.word
+FROM words ww
+JOIN (
+  SELECT a.word_id AS rwid
+	FROM word_map a
+	JOIN (
+	  SELECT m.user_id AS uid, m.word_index - 1 AS wix
+	  FROM word_map m
+	  WHERE m.word_id = (
+	    SELECT w.id
+	    FROM words w
+	    WHERE w.word = 'cat'
+	  )
+	) AS b
+	ON (a.user_id = b.uid)
+	WHERE a.word_index = b.wix
+) AS r
+ON (ww.id = r.rwid);
+
+
+

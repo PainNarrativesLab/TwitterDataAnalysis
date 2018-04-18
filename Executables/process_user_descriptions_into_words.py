@@ -1,13 +1,17 @@
 """
 Created by adam on 3/27/18
 """
+from ProcessingTools.Errors import AllResponsesComplete
+
 __author__ = 'adam'
 
-from DataTools.Cursors import UserCursor
+import time
+from time import sleep
+
+from DataTools.Cursors import Cursor, WindowedUserCursor
 from Loggers.FileLoggers import FileWritingLogger
-from ProcessingTools.Listeners import SaveListener
-from ProcessingTools.ProcessingControllers import UserProcessingController
-from ProcessingTools.QueueTools import SaveQueueHandler
+from ProcessingTools.ProcessingControllers import UserProcessingController, IProcessingController
+from Servers.ClientSide import ServerQueueDropin
 from TextProcessors.Filters import URLFilter, UsernameFilter, PunctuationFilter, NumeralFilter, StopwordFilter
 from TextProcessors.Modifiers import WierdBPrefixConverter, CaseConverter
 from TextProcessors.Processors import SingleWordProcessor
@@ -25,57 +29,128 @@ modifiers = [
     CaseConverter()
 ]
 
-
-def run_test(controller, cursor, number):
-    us = []
-    for i in range(0, number):
-        us.append(cursor.next())
-    [controller.process(u) for u in us]
+numberProfiles = 2
 
 
-def process(controller, cursor):
-    # all users
+def run_test( controller, cursor, number ):
+    us = [ ]
+    user_count = 0
+    try:
+        for i in range( 0, number ):
+            user = cursor.next()
+            #         Note that we're not going to add the id to the map yet
+            f = controller.process( user )
+            user_count += 1
+    except StopIteration as e:
+        print( "%s users processed (not nec done)" % user_count )
+
+    except AllResponsesComplete:
+        # Now we're really done
+        print( 'done' )
+
+    return user_count
+
+
+def process( controller: IProcessingController, cursor: Cursor, limit=None ):
+    """Runs the experiment
+    :param controller:
+    :param cursor:
+    :param limit: The max number of objects to process. If None, will run until StopIteration is raised
+    :return:
+    """
+
+    # number of users processed
     user_count = 0
 
     while True:
         try:
             user = cursor.next()
             #         Note that we're not going to add the id to the map yet
-            controller.process(user)
+            controller.process( user )
             user_count += 1
+            # print(controller.pendingResponseCount, user_count)
+            if limit is not None and user_count == limit:
+                # This won't get raised by the cursor
+                # since we are stopping due to a user imposed limit
+                raise StopIteration
         except StopIteration as e:
-            print("%s users processed" % user_count)
+            print( "%s users processed (not nec done)" % user_count )
             break
 
-    return control
+    return user_count
 
 
 if __name__ == '__main__':
     # Initialize logger
-    logger = FileWritingLogger(name='UserProfileWords')
+    logger = FileWritingLogger( name='UserProfileWords' )
+    profileLogger = FileWritingLogger( name='Profile' )
+    auditLogger = FileWritingLogger( name='AUDIT' )
+
+    t1 = time.time()
+    logger.add_break()
 
     # First set up the object which will handle applying
     # filters and modifiers to each word
     word_processor = SingleWordProcessor()
-    word_processor.add_filters(filters)
-    word_processor.add_modifiers(modifiers)
+    word_processor.add_filters( filters )
+    word_processor.add_modifiers( modifiers )
 
     # Set up the machinery for saving the
     # processed results
-    queueHandler = SaveQueueHandler()
-    listener = SaveListener()
-    queueHandler.register_listener(listener)
+    queueHandler = ServerQueueDropin()
 
     # Finally create the command and control
-    control = UserProcessingController(queueHandler)
-    control.load_word_processor(word_processor)
-    control.set_notice_logger(logger)
+    control = UserProcessingController( queueHandler )
+    control.load_word_processor( word_processor )
+    control.set_notice_logger( logger )
 
     # create user cursor
-    cursor = UserCursor(language='en')
+    cursor = WindowedUserCursor( language='en' )
+    CLIENT_MODULE = "WindowedUserCursor"
+    SERVER_MODULE = 'Tornado'
+    logger.log( "Start user profile --- %s %s " % (CLIENT_MODULE, SERVER_MODULE) )
 
-    logger.log("Start user profile words parsing ")
-    run_test(control, cursor, 3)
-    logger.log("Finish user profile words parsing ")
-    # run
-    # process(control, cursor)
+    # Run it
+    # LIMIT_USERS = 100
+    LIMIT_USERS = None
+    numberProcessed = process( control, cursor, LIMIT_USERS )
+
+    while True:
+        # While we're waiting for the promises to resolve
+        # we rest a bit and then check the value again
+        try:
+            control.prune_responses()
+            print( "%s futures pending after %s " % (control.pendingResponseCount, time.time() - t1) )
+            if control.pendingResponseCount == 0:
+                raise AllResponsesComplete
+            sleep( 1 )
+
+        except AllResponsesComplete:
+            # Now we're really done
+            print( "Responses are complete" )
+            break
+
+    # audit
+    auditLogger.log( "cursor called: %s " % cursor.callCount )
+    auditLogger.log( "enque called: %s" % queueHandler.enquedCount )
+    auditLogger.log( "Sent count: %s" % queueHandler.sentCount )
+    auditLogger.log( "Success count: %s" % queueHandler.successCount )
+    auditLogger.log( "Error count: %s" % queueHandler.errorCount )
+
+    numberProfiles = cursor.callCount
+
+    t2 = time.time()
+    logger.log( "Finish user profile words parsing " )
+    elapsed = t2 - t1
+    timePer = elapsed / numberProcessed
+    msg = ("%s profiles (of %s) took %s seconds. That's %s seconds per profile" % (
+        numberProcessed, numberProfiles, elapsed, timePer))
+    logger.log( msg )
+    profileMsg = "%s %s %s %s" % (CLIENT_MODULE, SERVER_MODULE, numberProcessed, elapsed)
+    profileLogger.log( profileMsg )
+    print( msg )
+# except Exception as e:
+#     logger.log("Error: %s" % e)
+
+# run
+# process(control, cursor)

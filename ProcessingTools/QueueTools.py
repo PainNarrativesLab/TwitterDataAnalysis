@@ -2,16 +2,17 @@
 Created by adam on 11/22/16
 """
 __author__ = 'adam'
-from environment import *
-# import Listeners
 
-# from threading import Lock
-# from collections import deque
+from queue import Queue
 
 from DataTools.DataStructures import is_result
 from ProcessingTools.Errors import NonResultEnqueued
+from environment import *
 
-from queue import Queue
+
+# import Listeners
+# from threading import Lock
+# from collections import deque
 
 
 class ILockingQueue(object):

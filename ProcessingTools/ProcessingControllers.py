@@ -13,9 +13,14 @@ Created by adam on 11/6/16
 __author__ = 'adam'
 
 import DataTools.TweetORM
-from DataTools.DataStructures import Result, is_result, make_tweet_result, make_user_result
+from DataTools.DataStructures import make_tweet_result, make_user_result
 from ProcessingTools.QueueTools import IQueueHandler
 from TextProcessors import Tokenizers, Processors
+
+
+def response_complete( responses, response ):
+    if response in responses:
+        responses.remove( response )
 
 
 class IProcessingController(object):
@@ -29,6 +34,7 @@ class IProcessingController(object):
         self.word_tokenizer = Tokenizers.WordTokenizer()
         self.QueueHandler = saveQueueHandler
         self._word_processors = []
+        self.responses = [ ]
 
     def load_word_processor(self, processor: Processors.IProcessor):
         """
@@ -66,7 +72,15 @@ class IProcessingController(object):
         if text is not None:
             result = self.make_result(sentenceIndex, wordIndex, text, objId)
             # print(result)
-            self.QueueHandler.enque(result)
+            response = self.QueueHandler.enque( result )
+            # response.add_done_callback(response_complete(self.responses, response))
+            # response.add_done_callback(self.prune_responses)
+            # response.add_done_callback(lambda x : self.remove_response(response))
+            self.responses.append( response )
+
+    def prune_responses( self ):
+        print( '%s responses' % len( self.responses ) )
+        self.responses = [ self.responses.remove( r ) for r in self.responses if r.done() ]
 
     def _processSentence(self, sentenceIndex: int, sentence: str, objId: int):
         """
@@ -141,6 +155,12 @@ class UserProcessingController(IProcessingController):
         """
         super().__init__(saveQueueHandler)
 
+    @property
+    def pendingResponseCount( self ):
+        """The number of Futures which have not yet completed"""
+        self.prune_responses()
+        return len( self.responses )
+
     def make_result(self, sentenceIndex: int, wordIndex: int, text: str, objId: int):
         return make_user_result(sentenceIndex, wordIndex, text, objId)
 
@@ -168,4 +188,4 @@ class UserProcessingController(IProcessingController):
 
             self.count_of_processed += 1
 
-        self.log_event("Processed %s users" % self.count_of_processed)
+        # self.log_event("Processed %s users" % self.count_of_processed)

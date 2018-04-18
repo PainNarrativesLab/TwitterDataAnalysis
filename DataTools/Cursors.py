@@ -3,12 +3,12 @@ Created by adam on 11/24/16
 """
 __author__ = 'adam'
 
-from environment import *
+import threading
 
 # Load cursor for tweet ids
 import DataTools.TweetORM
-import threading
 from DataTools import DataConnections
+from environment import *
 
 
 class threadsafe_iter:
@@ -43,7 +43,16 @@ class Cursor(object):
         self.item_iterator = None
         self.language = None
         self.limit = None
-        self.valid_args = [ 'language', 'limit']
+        self.valid_args = [ 'language', 'limit' ]
+
+    def create_dao( self ):
+        # load the db connection info
+        conn = DataConnections.MySqlConnection( CREDENTIAL_FILE )
+
+        # create the session connection to the db
+        self.dao = DataConnections.DAO( conn.engine )
+
+        print( 'connection ready' )
 
     def _process_kwargs(self, kwargs):
         """ Iterate through the strings stored in valid_args and set any values on self"""
@@ -91,11 +100,11 @@ class TweetCursor(Cursor):
             q = q.limit(self.limit)
 
         for t in q.all():
-                yield t
+            yield t
 
-            # print( "_create_tweet_iterator" )
-            # for t in self.dao.session.query(DataTools.TweetORM.Tweet).limit(self.limit).all():
-            #     yield t
+        # print( "_create_tweet_iterator" )
+        # for t in self.dao.session.query(DataTools.TweetORM.Tweet).limit(self.limit).all():
+        #     yield t
         #
         # else:
         #     for t in self.dao.session.query(DataTools.TweetORM.Tweet).all():
@@ -124,14 +133,9 @@ class UserCursor(Cursor):
         :param limit: The maximum number to retrieve. If unset, will iterate over all tweets
         """
         super().__init__()
-        # self.lock = threading.Lock()
+        self.lock = threading.Lock()
         self._process_kwargs(kwargs)
-
-        # load the db connection info
-        conn = DataConnections.MySqlConnection(CREDENTIAL_FILE)
-
-        # create the session connection to the db
-        self.dao = DataConnections.DAO(conn.engine)
+        self.create_dao()
 
         self.item_iterator = self._create_iterator()
 
@@ -162,13 +166,49 @@ class UserCursor(Cursor):
             #         .all():
             #     yield t
         # else:
-            # for t in self.dao.session.query(DataTools.TweetORM.Users).all():
-            #     yield t
+        # for t in self.dao.session.query(DataTools.TweetORM.Users).all():
+        #     yield t
 
     def next_user(self):
         """Returns the next user object from the db"""
         # return self.tweet_iterator.next()
         # with self.lock:
-        return self.next()
-        # return next(self.item_iterator)
+        # return self.next()
+        return next( self.item_iterator )
 
+
+class WindowedUserCursor( Cursor ):
+    def __init__( self, **kwargs ):
+        super().__init__()
+        # For auditing purposes
+        self.callCount = 0
+        self.firstId = 0
+        self.limit = 4
+        self.pk_attr = DataTools.TweetORM.Users.userID
+        self.model = DataTools.TweetORM.Users
+        # potentially override the above defaults
+        self._process_kwargs( kwargs )
+        self.create_dao()
+
+        self.qry = self.dao.session.query( self.model )
+
+        # Create the iterator object
+        self.my_iter = self._create_iterator()
+
+    def next( self ):
+        self.callCount += 1
+        return next( self.my_iter )
+
+    def _create_iterator( self ):
+
+        while True:
+            q = self.qry
+            if self.firstId is not None:
+                # get records with ids higher than our highest current
+                q = self.qry.filter( self.pk_attr > self.firstId )
+            rec = None
+            for rec in q.order_by( self.pk_attr ).limit( self.limit ):
+                yield rec
+            if rec is None:
+                break
+            self.firstId = self.pk_attr.__get__( rec, self.pk_attr ) if rec else None

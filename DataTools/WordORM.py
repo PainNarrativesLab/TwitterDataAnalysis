@@ -11,7 +11,7 @@ from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-from DataTools import DataConnections
+# import DataConnections
 
 # Base class that maintains the catalog of tables and classes in db
 Base = declarative_base()
@@ -54,6 +54,17 @@ class WordMapping(Base):
     # word_index=Column( Integer, primary_key=True)
 
 
+class WordMappingDeux( Base ):
+    """Mapping of the word's position within the tweet or user description"""
+    __tablename__ = 'word_map_deux'
+    id = Column( Integer, primary_key=True, autoincrement=True )
+    tweet_id = Column( BigInteger )
+    user_id = Column( BigInteger )
+    word = Column( UnicodeText )
+    sentence_index = Column( Integer, primary_key=False, autoincrement=False )
+    word_index = Column( Integer, primary_key=False, autoincrement=False )
+
+
 class StandardizedWordMapping(Base):
     """Mapping from twitter words to correctly spelled, English words
     Note, only word_id needs to be primary since it is one word_id will have one mapping to standard id
@@ -65,9 +76,11 @@ class StandardizedWordMapping(Base):
     updated_at = Column(DateTime, onupdate=datetime.datetime.now())
 
 
-def create_db_tables(seed=False):
+def create_db_tables( engine=None, seed=False ):
     """Creates tables in the database"""
-    engine = DataConnections.initialize_engine()
+    # if engine is None:
+    #     engine = DataConnections.initialize_engine()
+
     # create the tables
     Base.metadata.create_all(engine)
     # metadata = MetaData( )
