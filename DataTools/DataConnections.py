@@ -18,9 +18,13 @@ from environment import *
 # Base class that maintains the catalog of tables and classes in db
 Base = declarative_base()
 
+from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import sessionmaker
+
+import MySQLdb
 
 @contextmanager
-def session_scope():
+def session_scope(engine=None):
     """
     Provide a transactional scope around a series of operations.
 
@@ -34,9 +38,11 @@ def session_scope():
             ...do stuff...
     """
     try:
-        engine = initialize_engine( environment.ENGINE )
+        if engine is None:
+            engine = initialize_engine( environment.ENGINE )
         # DataTools's handle to database at global level
-        Session = sessionmaker( bind=engine )
+        # SessionFactory = make_scoped_session_factory(engine)
+        SessionFactory = make_session_factory(engine)
 
         if environment.ENGINE == 'sqlite' or environment.ENGINE == 'sqlite-file':
             # We need to get the db into memory when start up
@@ -44,7 +50,7 @@ def session_scope():
             # db
             create_db_tables( engine )
 
-        session = Session()
+        session = SessionFactory()
         yield session
         session.commit()
 
@@ -53,7 +59,17 @@ def session_scope():
         raise
 
     finally:
-        session.close()
+        if session:
+            session.close()
+
+
+def make_scoped_session_factory(engine):
+    session_factory = sessionmaker(bind=engine)
+    return scoped_session(session_factory)
+
+
+def make_session_factory(engine):
+    return sessionmaker( bind=engine )
 
 
 def initialize_engine( conn=environment.ENGINE ):
@@ -78,10 +94,11 @@ def _create_sqlite_engine( echo=False ):
     print( "creating connection: %s " % conn )
     return create_engine( conn, echo=False )
 
+file_path_generator = environment.sqlite_file_connection_string_generator()
 
-def _create_sqlite_file_engine( conn=SQLITE_FILE_CONNECTION_STRING, echo=True ):
+
+def _create_sqlite_file_engine( conn=next(file_path_generator), echo=True ):
     """Creates an sqlite db engine using the file defined in SQLITE_FILE"""
-    # conn = 'sqlite:////%s' % file_path
     print( "creating connection: %s " % conn )
     return create_engine( conn, echo=echo )
 
@@ -150,6 +167,20 @@ class Connection( object ):
         Creates the sqlalchemy engine and stores it in self.engine
         """
         raise NotImplementedError
+
+
+class NonOrmMySqlConnection(Connection):
+
+    def __init__( self, credential_file ):
+        self._driver = '+mysqlconnector'
+        super( __class__, self ).__init__( credential_file )
+
+    def _make_engine( self ):
+        if self._port:
+            server = "%s:%s" % (self._server, self._port)
+        else:
+            server = self._server
+        self.engine = MySQLdb.connect( server, self._username, self._password, self._db_name, cursorclass=MySQLdb.cursors.DictCursor )
 
 
 class MySqlConnection( Connection ):

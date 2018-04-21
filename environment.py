@@ -5,47 +5,66 @@ __author__ = 'adam'
 
 import os
 import sys
-
 ROOT = os.getenv("HOME")
+
+
 BASE = '%s/Dropbox/PainNarrativesLab' % ROOT
-
-# the directory that contains various common custom classes
-sys.path.append('%s/Dropbox/iPythonFiles/BaseClasses' % ROOT)
-
 DATAFOLDER = BASE + '/Data'
 MAPPING_PATH = "%s/TwitterDataAnalysis/mappings" % BASE
 CREDENTIAL_FILE = '%s/private_credentials/sql_local_credentials.xml' % BASE
+
+PROJ_BASE = "%s/TwitterDataAnalysis" % ROOT
 
 # Project folders
 TEXT_TOOLS_PATH = "%s/TextTools/" % BASE
 TWITTER_MINING_PATH = "%s/TwitterMining/" % BASE
 
+# Logging
+LOG_FOLDER_PATH = "%s/Desktop/TwitterDataAnalysisLogs" % ROOT
+
+sys.path.append(PROJ_BASE)
+sys.path.append("%s/ProcessingTools" % PROJ_BASE)
+
+sys.path.append("%s/DataTools" % PROJ_BASE)
 sys.path.append(TEXT_TOOLS_PATH)
 sys.path.append('%s/TextTools/TextProcessors' % BASE)
 
-# Logging
-LOG_FOLDER_PATH = "%s/Desktop/TwitterDataAnalysisLogs" % ROOT
+# the directory that contains various common custom classes
+sys.path.append('%s/Dropbox/iPythonFiles/BaseClasses' % ROOT)
+
+
+DB_FOLDER = "%s/Desktop/TwitterDataAnalysisLogs/dbs" % ROOT
 SQLITE_FILE = '%s/wordmapping.db' % LOG_FOLDER_PATH
 SQLITE_FILE_CONNECTION_STRING = 'sqlite:////%s' % SQLITE_FILE
 
+MASTER_DB = '%s/master.db' % LOG_FOLDER_PATH
+
+MAX_DB_FILES = 10
+
+
+def sqlite_file_connection_string_generator(folder_path=DB_FOLDER, max_files=MAX_DB_FILES):
+    cnt=1
+    while True:
+        file = '%s/wordmapping%s.db' % (folder_path, cnt)
+        yield file
+        # yield 'sqlite:////%s' % file
+        if cnt < max_files:
+            cnt += 1
+        else:
+            cnt = 1
+
+
 # Database server url
-DB_PORT = 8999
+DB_PORT = 8599
 DB_URL = "http://127.0.0.1:%s" % DB_PORT
 
 # How many transactions to queue before
 # flushing / committing to the db
 DB_QUEUE_SIZE = 1000
 
-# import importlib.util
-# spec = importlib.util.spec_from_file_location("WordBagMakers.WordBagMaker", TEXT_TOOLS_PATH)
-# wbm = importlib.util.module_from_spec(spec)
-# spec.loader.exec_module(wbm)
-# from importlib.machinery import SourceFileLoader
-# WBM = SourceFileLoader("WordBagMakers.WordBagMaker", "%s/WordBagMakers.py" % TEXT_TOOLS_PATH).load_module()
-
-ENGINE = 'mysql_test'
+# ENGINE = 'mysql_test'
 # ENGINE = 'sqlite'
-# ENGINE = 'sqlite-file'
+ENGINE = 'sqlite-file'
 
 # The name of the database to connect to
 DB = 'twitter_wordsTEST'

@@ -7,14 +7,20 @@ __author__ = 'adam'
 
 import time
 from time import sleep
+from environment import *
 
-from DataTools.Cursors import Cursor, WindowedUserCursor
+import DataTools.Cursors
 from Loggers.FileLoggers import FileWritingLogger
 from ProcessingTools.ProcessingControllers import UserProcessingController, IProcessingController
 from Servers.ClientSide import ServerQueueDropin
 from TextProcessors.Filters import URLFilter, UsernameFilter, PunctuationFilter, NumeralFilter, StopwordFilter
 from TextProcessors.Modifiers import WierdBPrefixConverter, CaseConverter
 from TextProcessors.Processors import SingleWordProcessor
+
+# How many users to process
+# LIMIT_USERS = 500
+
+LIMIT_USERS = None
 
 filters = [
     UsernameFilter(),
@@ -29,36 +35,14 @@ modifiers = [
     CaseConverter()
 ]
 
-numberProfiles = 2
 
-
-def run_test( controller, cursor, number ):
-    us = [ ]
-    user_count = 0
-    try:
-        for i in range( 0, number ):
-            user = cursor.next()
-            #         Note that we're not going to add the id to the map yet
-            f = controller.process( user )
-            user_count += 1
-    except StopIteration as e:
-        print( "%s users processed (not nec done)" % user_count )
-
-    except AllResponsesComplete:
-        # Now we're really done
-        print( 'done' )
-
-    return user_count
-
-
-def process( controller: IProcessingController, cursor: Cursor, limit=None ):
+def process( controller: IProcessingController, cursor: DataTools.Cursors.Cursor, limit=None ):
     """Runs the experiment
     :param controller:
     :param cursor:
     :param limit: The max number of objects to process. If None, will run until StopIteration is raised
     :return:
     """
-
     # number of users processed
     user_count = 0
 
@@ -99,20 +83,18 @@ if __name__ == '__main__':
     # processed results
     queueHandler = ServerQueueDropin()
 
-    # Finally create the command and control
+    # create the command and control
     control = UserProcessingController( queueHandler )
     control.load_word_processor( word_processor )
     control.set_notice_logger( logger )
 
     # create user cursor
-    cursor = WindowedUserCursor( language='en' )
+    cursor = DataTools.Cursors.WindowedUserCursor( language='en' )
     CLIENT_MODULE = "WindowedUserCursor"
     SERVER_MODULE = 'Tornado'
     logger.log( "Start user profile --- %s %s " % (CLIENT_MODULE, SERVER_MODULE) )
 
     # Run it
-    # LIMIT_USERS = 100
-    LIMIT_USERS = None
     numberProcessed = process( control, cursor, LIMIT_USERS )
 
     while True:
@@ -149,8 +131,3 @@ if __name__ == '__main__':
     profileMsg = "%s %s %s %s" % (CLIENT_MODULE, SERVER_MODULE, numberProcessed, elapsed)
     profileLogger.log( profileMsg )
     print( msg )
-# except Exception as e:
-#     logger.log("Error: %s" % e)
-
-# run
-# process(control, cursor)

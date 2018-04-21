@@ -1,3 +1,6 @@
 __author__ = 'adam'
 
-from environment import *
+# from environment import *
+import os
+import sys
+

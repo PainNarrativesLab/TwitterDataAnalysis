@@ -76,11 +76,12 @@ class IProcessingController(object):
             # response.add_done_callback(response_complete(self.responses, response))
             # response.add_done_callback(self.prune_responses)
             # response.add_done_callback(lambda x : self.remove_response(response))
-            self.responses.append( response )
+            if type(response) is not None:
+                self.responses.append( response )
 
     def prune_responses( self ):
         print( '%s responses' % len( self.responses ) )
-        self.responses = [ self.responses.remove( r ) for r in self.responses if r.done() ]
+        self.responses = [ self.responses.remove( r ) for r in self.responses if r is not None and r.done() ]
 
     def _processSentence(self, sentenceIndex: int, sentence: str, objId: int):
         """

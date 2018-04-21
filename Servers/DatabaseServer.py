@@ -18,15 +18,9 @@ import Helpers
 import time
 # from Loggers.FileLoggers import FileWritingLogger
 from Loggers.CsvLoggers import log_query, log_query_timestamp
-from DataConnections import session_scope
-# DataTools.DataRepositories.create_global_session()
-
-
-# from DataTools.WordORM import *
+from DataConnections import session_scope, make_scoped_session_factory
 import environment
 
-
-# from sqlalchemy.orm import sessionmaker
 
 class DoneCommanded( Exception ):
     pass
@@ -67,11 +61,12 @@ class MainHandler( tornado.web.RequestHandler ):
 
             # save it
             Workers.SaveWorker.run( result )
-            # dao.save(result)
-            if type( self )._requestCount > environment.DB_QUEUE_SIZE:
+            # If we've received enough requests,
+            # flush the changes to the db
+            if type( self )._requestCount % environment.DB_QUEUE_SIZE == 0:
                 Workers.SaveWorker.repository.session.commit()
                 Workers.SaveWorker.repository.session.flush()
-                type( self )._requestCount = 0
+                # type( self )._requestCount = 0
 
             t2 = time.time()
             elapsed = t2 - t1
@@ -93,68 +88,29 @@ def make_app():
 
 
 if __name__ == "__main__":
-    # logger = FileWritingLogger(name='DB Logger')
-    # # We need a single db connection instance for all of the
-    # # server processes. Otherwise, we will have trouble with
-    # # concurrent writes to the file.
-    # # That's what we create here
-    # try:
-    #     if type( engine ) is not None:
-    #         pass
-    # except NameError:
-    #     # connect to db
-    #     engine = DataConnections.initialize_engine()
-    #     # DataTools's handle to database at global level
-    #     Session = sessionmaker( bind=engine)
-    #
-    # if environment.ENGINE == 'sqlite' or environment.ENGINE == 'sqlite-file':
-    #     # We need to get the db into memory when start up
-    #     # environmental variables will determine details of the
-    #     # db
-    #     create_db_tables( engine )
-    #
-    # session = Session()
-    # #     if PLEASE_ROLLBACK is True:
-    # #         session.rollback()
 
     with session_scope() as session:
-        # dao = DataTools.DataRepositories.WordRepository(session)
+        # Initialize the shared database repository object
+        # which will handle saving to the db
         dao = DataTools.DataRepositories.MapRepository( session )
         Workers.SaveWorker.initialize_repository( dao )
-    try:
 
-        app = make_app()
-        # app.listen(environment.DB_PORT)
-        print( "Listening on %s" % environment.DB_PORT )
+        try:
+            app = make_app()
 
-        # server = tornado.httpserver.HTTPServer( app )
-        # server.bind( environment.DB_PORT )
-        # server.start( 0 )  # Forks multiple sub-processes
-        # tornado.ioloop.IOLoop.current().start()
+            sockets = tornado.netutil.bind_sockets( environment.DB_PORT )
+            tornado.process.fork_processes( 0 )  # Forks multiple sub-processes
+            server = tornado.httpserver.HTTPServer( app )
+            server.add_sockets( sockets )
+            print( "Listening on %s" % environment.DB_PORT )
+            # Enter loop and listen for requests
+            tornado.ioloop.IOLoop.current().start()
 
-        sockets = tornado.netutil.bind_sockets( environment.DB_PORT )
-        tornado.process.fork_processes( 0 )
-        server = tornado.httpserver.HTTPServer( app )
-        server.add_sockets( sockets )
-        tornado.ioloop.IOLoop.current().start()
+        except DoneCommanded:
+            session.commit()
 
-    except DoneCommanded:
-        pass
-    except KeyboardInterrupt:
-        pass
-        # todo Try using an in memory db and then flush to file here
-        print( "%s requests received" % MainHandler.i )
-        print( "%s requests received" % MainHandler._requestCount )
-    finally:
-        session.commit()
-# logger.log("Listening on %s" % environment.DB_PORT)
+        except KeyboardInterrupt:
+            print( "%s requests received" % MainHandler._requestCount )
 
-# channel = logging.StreamHandler(sys.stdout)
-# # channel.setLevel(log_level)
-# channel.setFormatter(tornado.log.LogFormatter())
-#
-# app_log = logging.getLogger("tornado.application")
-# gen_log = logging.getLogger("tornado.general")
-# app_log.addHandler(channel)
-
-# try:
+        finally:
+            session.commit()

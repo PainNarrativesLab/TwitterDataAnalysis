@@ -13,6 +13,7 @@ from tornado.simple_httpclient import SimpleAsyncHTTPClient
 import environment
 from Servers import Helpers
 
+from collections import deque
 
 class NoQueueTimeoutHTTPClient( SimpleAsyncHTTPClient ):
     def fetch_impl( self, request, callback ):
@@ -91,20 +92,29 @@ class Client( object ):
 
 class ServerQueueDropin( IQueueHandler ):
 
-    def __init__( self ):
+    def __init__( self, batch_size=10 ):
         super().__init__()
+        self.batch_size = batch_size
         self.enquedCount = 0
         self.client = Client()
+        self.store = deque()
         self.listeners = [ ]
 
     @gen.coroutine
     def enque( self, item ):
-        """Send to the db server to be recorded"""
+        """
+        Push a result into the queue for saving to
+        the db server. Once the batch size has been reached,
+        it will be sent to the server
+        """
         self.enquedCount += 1
-        response = yield self.client.send( item )
-
-        # print('bingo')
-        return response.body
+        self.store.appendleft( item )
+        if len( self.store ) >= self.batch_size:
+            b = [self.store.pop() for i in range(0, self.batch_size)]
+            response = yield self.client.send( b )
+            # print('bingo')
+            return response.body
+        # return None
 
     @property
     def sentCount( self ):

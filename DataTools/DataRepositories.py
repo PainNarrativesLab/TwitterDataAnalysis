@@ -8,26 +8,6 @@ from DataTools.DataStructures import *
 from DataTools.Errors import DataError
 from DataTools.WordORM import *
 
-
-#
-#
-# try:
-#     if type(Session) is not None:
-#         pass
-#     else:
-#         raise ValueError
-# except:
-#     # connect to db
-#     engine = DataConnections.initialize_engine()
-#     # DataTools's handle to database at global level
-#     Session = sessionmaker(bind=engine)
-#
-#     # connect to db: Local object
-#     session = Session()
-#     if PLEASE_ROLLBACK is True:
-#         session.rollback()
-
-
 class IRepository( object ):
     def save( self, listOfResults ):
         raise NotImplementedError
@@ -53,7 +33,9 @@ class ISessionHaver( object ):
     Loads and initalizes on object construction. """
 
     def __init__( self ):
-        self.start_session()
+        self.session = None
+        self.session_factory = None
+        # self.start_session()
 
     # def start_session( self ):
     #     """Loads the sqlalchemy Session object in as self.session"""
