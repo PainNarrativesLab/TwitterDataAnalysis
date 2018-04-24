@@ -5,8 +5,8 @@ __author__ = 'adam'
 
 import os
 import sys
-ROOT = os.getenv("HOME")
 
+ROOT = os.getenv( "HOME" )
 
 BASE = '%s/Dropbox/PainNarrativesLab' % ROOT
 DATAFOLDER = BASE + '/Data'
@@ -22,28 +22,26 @@ TWITTER_MINING_PATH = "%s/TwitterMining/" % BASE
 # Logging
 LOG_FOLDER_PATH = "%s/Desktop/TwitterDataAnalysisLogs" % ROOT
 
-sys.path.append(PROJ_BASE)
-sys.path.append("%s/ProcessingTools" % PROJ_BASE)
+sys.path.append( PROJ_BASE )
+sys.path.append( "%s/ProcessingTools" % PROJ_BASE )
 
-sys.path.append("%s/DataTools" % PROJ_BASE)
-sys.path.append(TEXT_TOOLS_PATH)
-sys.path.append('%s/TextTools/TextProcessors' % BASE)
+sys.path.append( "%s/DataTools" % PROJ_BASE )
+sys.path.append( TEXT_TOOLS_PATH )
+sys.path.append( '%s/TextTools/TextProcessors' % BASE )
 
 # the directory that contains various common custom classes
-sys.path.append('%s/Dropbox/iPythonFiles/BaseClasses' % ROOT)
+sys.path.append( '%s/Dropbox/iPythonFiles/BaseClasses' % ROOT )
 
-
+# sqlite db files
 DB_FOLDER = "%s/Desktop/TwitterDataAnalysisLogs/dbs" % ROOT
 SQLITE_FILE = '%s/wordmapping.db' % LOG_FOLDER_PATH
 SQLITE_FILE_CONNECTION_STRING = 'sqlite:////%s' % SQLITE_FILE
-
-MASTER_DB = '%s/master.db' % LOG_FOLDER_PATH
-
-MAX_DB_FILES = 10
+MASTER_DB = '%s/master.db' % LOG_FOLDER_PATH # the file things get compiled into
+MAX_DB_FILES = 10 # the maximum number of db files to create.
 
 
-def sqlite_file_connection_string_generator(folder_path=DB_FOLDER, max_files=MAX_DB_FILES):
-    cnt=1
+def sqlite_file_connection_string_generator( folder_path=DB_FOLDER, max_files=MAX_DB_FILES ):
+    cnt = 1
     while True:
         file = '%s/wordmapping%s.db' % (folder_path, cnt)
         yield file
@@ -83,4 +81,3 @@ PRINT_STEPS = False
 
 # default tweet id to use in dev
 TESTING_TWEET_ID = 123456789
-

@@ -86,6 +86,9 @@ class Client( object ):
         # instead.
         return response
 
+    def send_flush_command( self ):
+        self.http_client.fetch( self.url, method="GET" )
+
     def close( self ):
         self.http_client.close()
 
@@ -112,7 +115,6 @@ class ServerQueueDropin( IQueueHandler ):
         if len( self.store ) >= self.batch_size:
             b = [self.store.pop() for i in range(0, self.batch_size)]
             response = yield self.client.send( b )
-            # print('bingo')
             return response.body
         # return None
 
