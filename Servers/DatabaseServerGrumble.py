@@ -1,7 +1,6 @@
 """
 Created by adam on 3/27/18
 """
-from Servers.Errors import DBExceptions
 
 __author__ = 'adam'
 
@@ -11,12 +10,8 @@ import tornado.httpserver
 import tornado.log
 
 import environment
-import Helpers
-from RequestHandlers import UserDescriptionHandler
-
-
-class DoneCommanded( Exception ):
-    pass
+from Servers.RequestHandlers import UserDescriptionHandler
+from Servers.Errors import ShutdownCommanded
 
 
 def make_app():
@@ -25,8 +20,8 @@ def make_app():
     ] )
 
 
-if __name__ == "__main__":
-
+def main():
+    print('running dsg main')
     try:
         app = make_app()
 
@@ -38,8 +33,10 @@ if __name__ == "__main__":
         # Enter loop and listen for requests
         tornado.ioloop.IOLoop.current().start()
 
-    except DoneCommanded:
+    except ShutdownCommanded as e:
+        print( 'dsg received shutdown' )
         UserDescriptionHandler.save_queued()
+        exit()
         # pass
         # session.commit()
 
@@ -53,3 +50,7 @@ if __name__ == "__main__":
         # UserDescriptionHandler.save_queued()
         pass
         # session.commit()
+
+
+if __name__ == "__main__":
+    main()

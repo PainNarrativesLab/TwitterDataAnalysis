@@ -2,18 +2,24 @@
 Created by adam on 3/27/18
 """
 from ProcessingTools.QueueTools import IQueueHandler
-
+from Servers.Mixins import ResponseStoreMixin
 __author__ = 'adam'
 
 from tornado import gen
 from tornado.httpclient import AsyncHTTPClient
 from tornado.log import gen_log
 from tornado.simple_httpclient import SimpleAsyncHTTPClient
-
+from ProcessingTools.Mixins import ProcessIdHaver
 import environment
 from Servers import Helpers
 
 from collections import deque
+
+# instrumenting to determine if running async
+from profiling.OptimizingTools import write_start_stop, timestamp_writer, standard_timestamp
+log_file = "%s/client-send.csv" % environment.LOG_FOLDER_PATH
+log_file2 = "%s/client-enque.csv" % environment.LOG_FOLDER_PATH
+
 
 class NoQueueTimeoutHTTPClient( SimpleAsyncHTTPClient ):
     def fetch_impl( self, request, callback ):
@@ -32,21 +38,22 @@ class NoQueueTimeoutHTTPClient( SimpleAsyncHTTPClient ):
 AsyncHTTPClient.configure( NoQueueTimeoutHTTPClient )
 
 
-class Client( object ):
+class Client( ProcessIdHaver, ResponseStoreMixin ):
 
     @classmethod
     def initialize_client( cls ):
-        Client.http_client = AsyncHTTPClient()
+        cls.http_client = AsyncHTTPClient()
 
     def __init__( self ):
+        self.id_prefix = 'client.send'
+        super().__init__()
         self.url = environment.DB_URL
         self.sentCount = 0
         self.errorCount = 0
         self.successCount = 0
-        # self.logger = FileWritingLogger(name='Client Response ')
 
         if not hasattr( self, 'http_client' ):
-            Client.initialize_client()
+            type( self ).initialize_client()
 
     # def handle_response(self, response):
     #     """Client side handler of the promise"""
@@ -57,26 +64,17 @@ class Client( object ):
     #     else:
     #         self.successCount += 1
     #
-    # # @gen.coroutine
-    # def send_result(self, result):
-    #     """Uses the client to make a request"""
-    #     payload = Helpers.encode_payload(result)
-    #     return self.client.fetch(self.url, self.handle_response, method="POST", body=payload)
-
-    @gen.coroutine
-    def send_result( self, result ):
-        """Uses the client to make a request
-        NOT YET WORKING
-        """
-        payload = Helpers.encode_payload( result )
-        response = yield self.http_client.fetch( self.url, method="POST", body=payload )
-        return response.body
 
     @gen.coroutine
     def send( self, result ):
         """Post's the result to the server, yields a future"""
         self.sentCount += 1
-        # yield self.send_result(result)
+
+        # write the timestamp to file
+        # we aren't using the decorator for fear
+        # it will mess up the async
+        timestamp_writer(log_file)
+
         payload = Helpers.encode_payload( result )
         response = yield self.http_client.fetch( self.url, method="POST", body=payload )
         # response = yield Helpers.send_result(self.http_client, self.url, result)
@@ -84,18 +82,28 @@ class Client( object ):
         # a generator is not allowed and you must use
         #   raise gen.Return(response.body)
         # instead.
+        self.add_response(response)
         return response
 
-    def send_flush_command( self ):
-        self.http_client.fetch( self.url, method="GET" )
+    def send_flush_command( self, repeat=100 ):
+        """Instructs the server to flush the queue of whichever
+        handler receives it to the db. The signal thus needs to be
+        sent several times to make sure all the handlers receive it
+        """
+        for _ in range( 0, repeat ):
+            self.http_client.fetch( self.url, method="GET" )
+
+    def send_shutdown_command( self ):
+        self.http_client.fetch( self.url, method="DELETE" )
 
     def close( self ):
         self.http_client.close()
 
 
-class ServerQueueDropin( IQueueHandler ):
+class ServerQueueDropin( IQueueHandler, ProcessIdHaver ):
 
     def __init__( self, batch_size=10 ):
+        self.id_prefix = 'sqdi.enque'
         super().__init__()
         self.batch_size = batch_size
         self.enquedCount = 0
@@ -110,12 +118,20 @@ class ServerQueueDropin( IQueueHandler ):
         the db server. Once the batch size has been reached,
         it will be sent to the server
         """
+        # write the timestamp to file
+
+        # write the timestamp to file
+        # we aren't using the decorator for fear
+        # it will mess up the async
+        timestamp_writer(log_file2)
+
         self.enquedCount += 1
+        # print(self.pid, self.enquedCount)
         self.store.appendleft( item )
         if len( self.store ) >= self.batch_size:
-            b = [self.store.pop() for i in range(0, self.batch_size)]
+            b = [ self.store.pop() for i in range( 0, self.batch_size ) ]
             response = yield self.client.send( b )
-            return response.body
+            # return response.body
         # return None
 
     @property
@@ -132,3 +148,7 @@ class ServerQueueDropin( IQueueHandler ):
 
     def next( self ):
         pass
+
+
+if __name__ == "__main__":
+    pass

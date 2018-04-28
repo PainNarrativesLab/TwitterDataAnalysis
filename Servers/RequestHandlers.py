@@ -6,17 +6,22 @@ __author__ = 'adam'
 import sqlite3
 from collections import deque
 
-import Helpers
 import tornado.web
-from progress.spinner import Spinner
+from progress.spinner import MoonSpinner, Spinner
 
 import environment
-from Servers.Errors import DBExceptions
-from profiling.OptimizingTools import time_and_log_query, time_and_log_request
+from Loggers.FileLoggers import FileWritingLogger
+from Servers import Helpers
+from Servers.Errors import DBExceptions, ShutdownCommanded
+from profiling.OptimizingTools import time_and_log_query, log_start_stop
 
+# instrumenting to determine if running async
+from profiling.OptimizingTools import timestamp_writer
+log_file = "%s/server-receive.csv" % environment.LOG_FOLDER_PATH
+log_file2 = "%s/server-save.csv" % environment.LOG_FOLDER_PATH
+query_log = '%s/query_log.csv' % environment.LOG_FOLDER_PATH
+query_time_log = '%s/query_time_log.csv' % environment.LOG_FOLDER_PATH
 
-class DoneCommanded( Exception ):
-    pass
 
 
 class UserDescriptionHandler( tornado.web.RequestHandler ):
@@ -30,37 +35,40 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
     results = deque()
 
     _requestCount = 0
+    _queryCount = 0
 
     spinner = Spinner( 'Loading ' )
+    spinner2 = MoonSpinner()
+
+    logger = FileWritingLogger( name='UserDescriptionHandler' )
 
     def __init__( self, application, request, **kwargs ):
         super().__init__( application, request )
 
-    @property
-    def i( self ):
-        return type( self )._requestCount
-
-    @i.setter
-    def i( self, val ):
-        type( self )._requestCount = val
-
-    def increment_request_count( self ):
-        self.i += 1
-
-    def get( self ):
-        print( "%s still in queue" % len( UserDescriptionHandler.results ) )
-        type( self ).save_queued()
-        print( "%s in queue after flush" % len( UserDescriptionHandler.results ) )
-        self.write( "Hello, world" )
+    @classmethod
+    def increment_request_count( cls ):
+        # increment the notification spinner
+        cls.spinner.next()
+        # add to the stored request count.
+        cls._requestCount += 1
 
     @classmethod
-    @time_and_log_query
+    def increment_query_count( cls ):
+        # increment the notification spinner
+        cls.spinner2.next()
+        # add to the stored request count.
+        cls._queryCount += 1
+
+    @classmethod
+    @log_start_stop([query_time_log])
     def save_queued( cls ):
         """Saves all the items in the queue to the db"""
+        cls.increment_query_count()
+
+        timestamp_writer(log_file2)
         try:
             # We alternate between several db files to avoid locking
             # problems.
-            # todo Replace with more formal mutex
             file_path = next( cls.file_path_generator )
 
             conn = sqlite3.connect( file_path )
@@ -78,6 +86,8 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
 
     @classmethod
     def enqueue_result( cls, result ):
+        cls.increment_request_count()
+
         try:
             rt = (result.text, result.sentence_index, result.word_index, result.id)
             cls.results.appendleft( rt )
@@ -87,22 +97,51 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
         except Exception as e:
             print( "error when enquing %s" % e )
 
-    @time_and_log_request
+    @classmethod
+    def shutdown( cls ):
+        """This handles the client side command to cease all
+        server operations. That involves flushing the
+        queue and writing to requisite log files"""
+        # flush the queue (for this handler instance!)
+        # todo make the queue fully shared
+        cls.save_queued()
+
+        message = "Shutdown called. \n # requests: %s \n # queries: %s" % (cls._requestCount, cls._queryCount)
+        print( message )
+        cls.logger.log( message )
+        # emit the command to shutdown the server
+        raise ShutdownCommanded
+        # (requests=cls._requestCount, queries=cls._queryCount)
+
+    #### Actual handler methods ####
+
+    def get( self ):
+        """Flushes any remaining results in the queue to the dbs"""
+        print( "%s still in queue" % len( UserDescriptionHandler.results ) )
+        type( self ).save_queued()
+        print( "%s in queue after flush" % len( UserDescriptionHandler.results ) )
+
+        self.write( "Hello, world" )
+
+
+    @log_start_stop([query_log])
     def post( self ):
-
-        self.increment_request_count()
-
+        """Handles the submision of a list of
+        new user-word records.
+        """
         try:
+            timestamp_writer(log_file)
             # decode json
             payload = Helpers.decode_payload( self.request.body )
 
+            # The payload is a list containing
+            # a batch of results.
+            # Thus we need to iterate over it
             for p in payload:
                 # convert to a Result
                 result = Helpers.make_result_from_decoded_payload( p )
+                # push it into the queue
                 type( self ).enqueue_result( result )
-
-            # increment the notification spinner
-            type( self ).spinner.next()
 
             # Send success response
             self.write( "success" )
@@ -110,6 +149,10 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
         except DBExceptions as e:
             # self.logger.log_error('db error: %s' % e.message)
             self.write( "error" )
+
+    def delete( self ):
+        """closes all operations"""
+        type( self ).shutdown()
 
 
 if __name__ == '__main__':

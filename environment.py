@@ -6,13 +6,12 @@ __author__ = 'adam'
 import os
 import sys
 
+############## Locations of code
 ROOT = os.getenv( "HOME" )
-
 BASE = '%s/Dropbox/PainNarrativesLab' % ROOT
 DATAFOLDER = BASE + '/Data'
 MAPPING_PATH = "%s/TwitterDataAnalysis/mappings" % BASE
 CREDENTIAL_FILE = '%s/private_credentials/sql_local_credentials.xml' % BASE
-
 PROJ_BASE = "%s/TwitterDataAnalysis" % ROOT
 
 # Project folders
@@ -22,16 +21,28 @@ TWITTER_MINING_PATH = "%s/TwitterMining/" % BASE
 # Logging
 LOG_FOLDER_PATH = "%s/Desktop/TwitterDataAnalysisLogs" % ROOT
 
+# add everyone to path explicitly
 sys.path.append( PROJ_BASE )
-sys.path.append( "%s/ProcessingTools" % PROJ_BASE )
 
-sys.path.append( "%s/DataTools" % PROJ_BASE )
+
 sys.path.append( TEXT_TOOLS_PATH )
+sys.path.append( "%s/DataTools" % PROJ_BASE )
+sys.path.append( "%s/Executables" % PROJ_BASE )
+
+sys.path.append( "%s/Loggers" % PROJ_BASE )
 sys.path.append( '%s/TextTools/TextProcessors' % BASE )
+sys.path.append( "%s/ProcessingTools" % PROJ_BASE )
+sys.path.append( "%s/profiling" % PROJ_BASE )
+sys.path.append( '%s/Servers' % BASE )
+
 
 # the directory that contains various common custom classes
 sys.path.append( '%s/Dropbox/iPythonFiles/BaseClasses' % ROOT )
 
+
+
+
+############# DB files
 # sqlite db files
 DB_FOLDER = "%s/Desktop/TwitterDataAnalysisLogs/dbs" % ROOT
 SQLITE_FILE = '%s/wordmapping.db' % LOG_FOLDER_PATH

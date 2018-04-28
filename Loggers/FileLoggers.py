@@ -34,6 +34,8 @@ class FileWritingLogger(ILogger):
     def add_break( self ):
         self.log( "=====================================================" )
 
+
+
 # class DBEventLogger(LogWriter):
 #     """
 #     Handles logging and printing information about database events

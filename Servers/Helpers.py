@@ -60,3 +60,4 @@ def make_result_from_decoded_payload( payload ):
         return make_user_result( sentence_index, word_index, text, objId )
 
     raise BadPayloadException
+

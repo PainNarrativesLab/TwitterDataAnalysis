@@ -23,3 +23,11 @@ class SavingErrorException( DBExceptions ):
     def __init__( self ):
         super().__init__()
         self.message = "Problem saving result"
+
+
+class ShutdownCommanded( Exception ):
+
+    def __init__( self, **kwargs ):
+        super().__init__()
+        for k in kwargs.keys():
+            self[k] = kwargs[k]
