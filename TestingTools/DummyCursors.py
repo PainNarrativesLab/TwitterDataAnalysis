@@ -4,7 +4,7 @@ Created by adam on 3/27/18
 __author__ = 'adam'
 
 
-from Factories import UserFactory
+from TestingTools.Factories import UserFactory
 from DataTools.Cursors import Cursor
 
 

@@ -4,23 +4,24 @@ Created by adam on 3/27/18
 
 __author__ = 'adam'
 
-import tornado.ioloop
-import tornado.web
-import tornado.httpserver
-import tornado.log
-
-import environment
-from Servers.RequestHandlers import UserDescriptionHandler
-from Servers.Errors import ShutdownCommanded
-
-
-def make_app():
-    return tornado.web.Application( [
-        (r"/", UserDescriptionHandler),
-    ] )
-
 
 def main():
+    # Imports inside the function to help with
+    # running on cluster
+    import tornado.ioloop
+    import tornado.web
+    import tornado.httpserver
+    import tornado.log
+
+    import environment
+    from Servers.RequestHandlers import UserDescriptionHandler
+    from Servers.Errors import ShutdownCommanded
+
+    def make_app():
+        return tornado.web.Application( [
+            (r"/", UserDescriptionHandler),
+        ] )
+
     print('running dsg main')
     try:
         app = make_app()
@@ -37,8 +38,6 @@ def main():
         print( 'dsg received shutdown' )
         UserDescriptionHandler.save_queued()
         exit()
-        # pass
-        # session.commit()
 
     except KeyboardInterrupt:
         # print("%s still in queue" % len(UserDescriptionHandler.results))

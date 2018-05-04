@@ -20,6 +20,7 @@ TWITTER_MINING_PATH = "%s/TwitterMining/" % BASE
 
 # Logging
 LOG_FOLDER_PATH = "%s/Desktop/TwitterDataAnalysisLogs" % ROOT
+PROFILING_LOG_FOLDER_PATH = "%s/profiling" % LOG_FOLDER_PATH
 
 # add everyone to path explicitly
 sys.path.append( PROJ_BASE )
@@ -64,7 +65,7 @@ def sqlite_file_connection_string_generator( folder_path=DB_FOLDER, max_files=MA
 
 
 # Database server url
-DB_PORT = 8599
+DB_PORT = 8592
 DB_URL = "http://127.0.0.1:%s" % DB_PORT
 
 # How many transactions to queue before

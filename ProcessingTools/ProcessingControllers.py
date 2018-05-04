@@ -12,6 +12,8 @@ Created by adam on 11/6/16
 """
 __author__ = 'adam'
 
+from tornado import gen
+
 import DataTools.TweetORM
 import environment
 from DataTools.DataStructures import make_tweet_result, make_user_result
@@ -21,7 +23,7 @@ from TextProcessors import Tokenizers, Processors
 # instrumenting to determine if running async
 from profiling.OptimizingTools import timestamp_writer
 
-log_file = "%s/processing-enque.csv" % environment.LOG_FOLDER_PATH
+log_file = "%s/processing-enque.csv" % environment.PROFILING_LOG_FOLDER_PATH
 
 
 def response_complete( responses, response ):
@@ -68,6 +70,7 @@ class IProcessingController( ResponseStoreMixin ):
       """
         raise NotImplementedError
 
+    @gen.coroutine
     def make_and_enque_result( self, sentenceIndex: int, wordIndex: int, text: str, objId: int ):
         """Makes the result and hands it off to the queue handler
         :param objId: The user or tweet's id
@@ -80,7 +83,7 @@ class IProcessingController( ResponseStoreMixin ):
             # write the timestamp to file
             timestamp_writer( log_file )
 
-            response = self.QueueHandler.enque( result )
+            self.QueueHandler.enque( result )
             # self.add_response(response)
 
             # response.add_done_callback(response_complete(self.responses, response))
@@ -171,6 +174,7 @@ class UserProcessingController( IProcessingController ):
     def make_result( self, sentenceIndex: int, wordIndex: int, text: str, objId: int ):
         return make_user_result( sentenceIndex, wordIndex, text, objId )
 
+    @gen.coroutine
     def process( self, users: list ):
         """Runs the string processing on a user's profile and
         enques the result for saving
@@ -194,5 +198,20 @@ class UserProcessingController( IProcessingController ):
               enumerate( sentences ) ]
 
             self.count_of_processed += 1
+            return self.count_of_processed
 
-        # self.log_event("Processed %s users" % self.count_of_processed)
+    @gen.coroutine
+    def process_from_cursor( self, cursor, limit=None ):
+        while True:
+            try:
+                user = cursor.next()
+                #         Note that we're not going to add the id to the map yet
+                self.process( user )
+                if limit is not None and self.count_of_processed == limit:
+                    # This won't get raised by the cursor
+                    # since we are stopping due to a user imposed limit
+                    raise StopIteration
+            except StopIteration as e:
+                print( "%s users processed (not nec done)" % self.count_of_processed )
+                break
+        yield self.count_of_processed

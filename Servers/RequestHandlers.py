@@ -17,11 +17,10 @@ from profiling.OptimizingTools import time_and_log_query, log_start_stop
 
 # instrumenting to determine if running async
 from profiling.OptimizingTools import timestamp_writer
-log_file = "%s/server-receive.csv" % environment.LOG_FOLDER_PATH
-log_file2 = "%s/server-save.csv" % environment.LOG_FOLDER_PATH
+server_receive_log_file = "%s/server-receive.csv" % environment.PROFILING_LOG_FOLDER_PATH
+server_save_log_file = "%s/server-save.csv" % environment.PROFILING_LOG_FOLDER_PATH
 query_log = '%s/query_log.csv' % environment.LOG_FOLDER_PATH
 query_time_log = '%s/query_time_log.csv' % environment.LOG_FOLDER_PATH
-
 
 
 class UserDescriptionHandler( tornado.web.RequestHandler ):
@@ -65,7 +64,7 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
         """Saves all the items in the queue to the db"""
         cls.increment_query_count()
 
-        timestamp_writer(log_file2)
+        timestamp_writer( server_save_log_file )
         try:
             # We alternate between several db files to avoid locking
             # problems.
@@ -123,14 +122,13 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
 
         self.write( "Hello, world" )
 
-
     @log_start_stop([query_log])
     def post( self ):
         """Handles the submision of a list of
         new user-word records.
         """
         try:
-            timestamp_writer(log_file)
+            timestamp_writer( server_receive_log_file )
             # decode json
             payload = Helpers.decode_payload( self.request.body )
 

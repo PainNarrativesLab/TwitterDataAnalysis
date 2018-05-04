@@ -17,8 +17,8 @@ from collections import deque
 
 # instrumenting to determine if running async
 from profiling.OptimizingTools import write_start_stop, timestamp_writer, standard_timestamp
-log_file = "%s/client-send.csv" % environment.LOG_FOLDER_PATH
-log_file2 = "%s/client-enque.csv" % environment.LOG_FOLDER_PATH
+client_send_log_file = "%s/client-send.csv" % environment.PROFILING_LOG_FOLDER_PATH
+client_enque_log_file = "%s/client-enque.csv" % environment.PROFILING_LOG_FOLDER_PATH
 
 
 class NoQueueTimeoutHTTPClient( SimpleAsyncHTTPClient ):
@@ -55,33 +55,27 @@ class Client( ProcessIdHaver, ResponseStoreMixin ):
         if not hasattr( self, 'http_client' ):
             type( self ).initialize_client()
 
-    # def handle_response(self, response):
-    #     """Client side handler of the promise"""
-    #     self.successCount += 1
-    #     if response.error:
-    #         self.logger.log_error(response.error)
-    #         self.errorCount += 1
-    #     else:
-    #         self.successCount += 1
-    #
-
     @gen.coroutine
     def send( self, result ):
+        # def send( self, result ):
         """Post's the result to the server, yields a future"""
         self.sentCount += 1
 
         # write the timestamp to file
         # we aren't using the decorator for fear
         # it will mess up the async
-        timestamp_writer(log_file)
+        timestamp_writer( client_send_log_file )
 
         payload = Helpers.encode_payload( result )
+        # self.http_client.fetch( self.url, method="POST", body=payload )
+
         response = yield self.http_client.fetch( self.url, method="POST", body=payload )
         # response = yield Helpers.send_result(self.http_client, self.url, result)
         # In Python versions prior to 3.3, returning a value from
         # a generator is not allowed and you must use
         #   raise gen.Return(response.body)
         # instead.
+
         self.add_response(response)
         return response
 
@@ -99,7 +93,7 @@ class Client( ProcessIdHaver, ResponseStoreMixin ):
     def close( self ):
         self.http_client.close()
 
-
+# __slots__ = ['batch', 'batch_size', 'save', 'flush']
 class ServerQueueDropin( IQueueHandler, ProcessIdHaver ):
 
     def __init__( self, batch_size=10 ):
@@ -119,18 +113,17 @@ class ServerQueueDropin( IQueueHandler, ProcessIdHaver ):
         it will be sent to the server
         """
         # write the timestamp to file
-
-        # write the timestamp to file
         # we aren't using the decorator for fear
         # it will mess up the async
-        timestamp_writer(log_file2)
+        timestamp_writer( client_enque_log_file )
 
         self.enquedCount += 1
         # print(self.pid, self.enquedCount)
         self.store.appendleft( item )
         if len( self.store ) >= self.batch_size:
+            # if we've reached the batch size, send to the server
             b = [ self.store.pop() for i in range( 0, self.batch_size ) ]
-            response = yield self.client.send( b )
+            self.client.send( b )
             # return response.body
         # return None
 

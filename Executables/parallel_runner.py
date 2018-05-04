@@ -17,18 +17,38 @@ if __name__ == '__main__':
     import Servers.DatabaseServerGrumble as DSG
     from Executables import process_user_descriptions_into_words as Runner
 
+    def run():
+        print('running')
+        return Runner.main()
+
+
     # from environment import *
     # /Users/adam/Dropbox/PainNarrativesLab/TwitterDataAnalysis/
     rc = ipp.Client()
-
     print(rc.ids)
-    with rc[:].sync_imports():
-        import Servers
-        from Servers import DatabaseServerGrumble as DSG
-        import Executables
-        from Executables import process_user_descriptions_into_words as Runner
 
-    j = rc[:].apply_sync(DSG.main)
+    dview1 = rc[:]
+    # dview2 = rc[:]
+    dview1.block = False
+    # dview2.block = False
+
+    dview1.targets = [0]
+    dview1.targets = [1]
+
+    # dview.execute('run')
+    dview1.apply(run)
+
+    # dview1.apply_async(DSG.main())
+
+    # dview2.apply_async(run)
+
+    # dview.execute('DSG.main()')
+    print('j')
+
+    # with rc[:].sync_imports():
+        # import Servers
+        # from Servers import DatabaseServerGrumble as DSG
+        # from Executables import process_user_descriptions_into_words as Runner
 
     #
     #
@@ -55,9 +75,6 @@ if __name__ == '__main__':
 #     DSG.main()
 #
 # # @lview.parallel()
-# def run():
-#     print('running')
-#     return Runner.main()
 
     import numpy
     # print(rc.ids)

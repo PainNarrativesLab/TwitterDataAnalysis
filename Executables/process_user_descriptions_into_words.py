@@ -1,70 +1,72 @@
 """
 Created by adam on 3/27/18
 """
-from ProcessingTools.Errors import AllResponsesComplete
 
 __author__ = 'adam'
-import environment
-
-import time
-from time import sleep
-
-import DataTools.Cursors
-from Loggers.FileLoggers import FileWritingLogger
-from ProcessingTools.ProcessingControllers import UserProcessingController, IProcessingController
-from Servers.ClientSide import ServerQueueDropin
-from TextProcessors.Filters import URLFilter, UsernameFilter, PunctuationFilter, NumeralFilter, StopwordFilter
-from TextProcessors.Modifiers import WierdBPrefixConverter, CaseConverter
-from TextProcessors.Processors import SingleWordProcessor
-
-# How many users to process
-# LIMIT_USERS = 50
-
-LIMIT_USERS = None
-
-filters = [
-    UsernameFilter(),
-    PunctuationFilter(),
-    URLFilter(),
-    NumeralFilter(),
-    StopwordFilter()
-]
-
-modifiers = [
-    WierdBPrefixConverter(),
-    CaseConverter()
-]
-
-
-def process( controller: IProcessingController, cursor: DataTools.Cursors.Cursor, limit=None ):
-    """Runs the experiment
-    :param controller:
-    :param cursor:
-    :param limit: The max number of objects to process. If None, will run until StopIteration is raised
-    :return:
-    """
-    # number of users processed
-    user_count = 0
-
-    while True:
-        try:
-            user = cursor.next()
-            #         Note that we're not going to add the id to the map yet
-            controller.process( user )
-            user_count += 1
-            # print(controller.pendingResponseCount, user_count)
-            if limit is not None and user_count == limit:
-                # This won't get raised by the cursor
-                # since we are stopping due to a user imposed limit
-                raise StopIteration
-        except StopIteration as e:
-            print( "%s users processed (not nec done)" % user_count )
-            break
-
-    return user_count
 
 
 def main():
+    from ProcessingTools.Errors import AllResponsesComplete
+
+    import environment
+
+    import time
+    from time import sleep
+
+    import DataTools.Cursors
+    from Loggers.FileLoggers import FileWritingLogger
+    from ProcessingTools.ProcessingControllers import UserProcessingController, IProcessingController
+    from Servers.ClientSide import ServerQueueDropin
+    from TextProcessors.Filters import URLFilter, UsernameFilter, PunctuationFilter, NumeralFilter, StopwordFilter
+    from TextProcessors.Modifiers import WierdBPrefixConverter, CaseConverter
+    from TextProcessors.Processors import SingleWordProcessor
+
+    from TestingTools.DummyCursors import DummyUserCursor
+    # How many users to process
+    LIMIT_USERS = 500
+
+    # LIMIT_USERS = 4500 #None
+
+    filters = [
+        UsernameFilter(),
+        PunctuationFilter(),
+        URLFilter(),
+        NumeralFilter(),
+        StopwordFilter()
+    ]
+
+    modifiers = [
+        WierdBPrefixConverter(),
+        CaseConverter()
+    ]
+
+    def process( controller: IProcessingController, cursor: DataTools.Cursors.Cursor, limit=None ):
+        """Runs the experiment
+        :param controller:
+        :param cursor:
+        :param limit: The max number of objects to process. If None, will run until StopIteration is raised
+        :return:
+        """
+        # number of users processed
+        user_count = 0
+
+        while True:
+            try:
+                user = cursor.next()
+                #         Note that we're not going to add the id to the map yet
+                controller.process( user )
+                user_count += 1
+                # print(controller.pendingResponseCount, user_count)
+                if limit is not None and user_count == limit:
+                    # This won't get raised by the cursor
+                    # since we are stopping due to a user imposed limit
+                    raise StopIteration
+            except StopIteration as e:
+                print( "%s users processed (not nec done)" % user_count )
+                break
+
+        return user_count
+
     # Initialize logger
     logger = FileWritingLogger( name='executable main' )
     profileLogger = FileWritingLogger( name='Profile' )
@@ -88,6 +90,7 @@ def main():
     control.load_word_processor( word_processor )
     control.set_notice_logger( logger )
 
+    # cursor = DummyUserCursor()
     # create user cursor
     cursor = DataTools.Cursors.WindowedUserCursor( language='en' )
     CLIENT_MODULE = "WindowedUserCursor"
@@ -95,22 +98,11 @@ def main():
     logger.log( "Start user profile --- %s %s " % (CLIENT_MODULE, SERVER_MODULE) )
 
     # Run it
-    numberProcessed = process( control, cursor, LIMIT_USERS )
+    result = control.process_from_cursor(cursor, LIMIT_USERS)
+    # numberProcessed = process( control, cursor, LIMIT_USERS )
 
-    # while True:
-    #     # While we're waiting for the promises to resolve
-    #     # we rest a bit and then check the value again
-    #     try:
-    #         control.prune_responses()
-    #         print( "%s futures pending after %s " % (control.pendingResponseCount, time.time() - t1) )
-    #         if control.pendingResponseCount == 0:
-    #             raise AllResponsesComplete
-    #         sleep( 1 )
-    #
-    #     except AllResponsesComplete:
-    #         # Now we're really done
-    #         print( "Responses are complete" )
-    #         break
+    while result.done() is False:
+        time.sleep(1)
 
     # audit
     auditLogger.log( "cursor called: %s " % cursor.callCount )
@@ -118,25 +110,26 @@ def main():
     auditLogger.log( "Sent count: %s" % queueHandler.sentCount )
     auditLogger.log( "Success count: %s" % queueHandler.successCount )
     auditLogger.log( "Error count: %s" % queueHandler.errorCount )
-
-    numberProfiles = cursor.callCount
-
-    t2 = time.time()
-    logger.log( "Finish user profile words parsing " )
-    elapsed = t2 - t1
-    timePer = elapsed / numberProcessed
-    msg = ("""
-    profiles tasked: %s \n
-    profiles processed: %s \n 
-    elapsed seconds: %s \n
-    seconds each: %s \n
-    """ % (numberProcessed, numberProfiles, elapsed, timePer)
-           )
-    logger.log( msg )
-    # profileMsg = "%s %s %s %s" % (CLIENT_MODULE, SERVER_MODULE, numberProcessed, elapsed)
-    # profileLogger.log( profileMsg )
-    print( msg )
+    #
+    # numberProfiles = cursor.callCount
+    #
+    # t2 = time.time()
+    # logger.log( "Finish user profile words parsing " )
+    # elapsed = t2 - t1
+    # # timePer = elapsed / numberProcessed
+    # msg = ("""
+    # profiles tasked: %s \n
+    # profiles processed: %s \n
+    # elapsed seconds: %s \n
+    # seconds each: %s \n
+    # """ % (None, numberProfiles, elapsed, timePer)
+    #        )
+    # logger.log( msg )
+    # # profileMsg = "%s %s %s %s" % (CLIENT_MODULE, SERVER_MODULE, numberProcessed, elapsed)
+    # # profileLogger.log( profileMsg )
+    # print( msg )
 
 
 if __name__ == '__main__':
+    print('j')
     main()
