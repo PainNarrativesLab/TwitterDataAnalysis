@@ -1,47 +1,13 @@
 """
 Created by adam on 11/22/16
 """
-__author__ = 'adam'
+from Queues.Interfaces import IQueueHandler, ILockingQueue
 
-from queue import Queue
+__author__ = 'adam'
 
 from DataTools.DataStructures import is_result
 from ProcessingTools.Errors import NonResultEnqueued
 from environment import *
-
-
-# import Listeners
-# from threading import Lock
-# from collections import deque
-
-
-class ILockingQueue( object ):
-    """
-    Uses a mutex lock to prevent the queue from being simultaneously
-    accessed from multiple threads, as well as other features to handle
-    problems with multi-thread access
-    """
-
-    def __init__( self ):
-        self.queue = Queue()
-
-    def _push_onto_queue( self, item ):
-        self.queue.put( item )
-
-    def _get_next_from_queue( self ):
-        return self.queue.get()
-
-
-class IQueueHandler( object ):
-    """Objects which contain a queue and registered listeners"""
-
-    def enque( self, result ):
-        """Push the item onto the queue and call listeners"""
-        return NotImplementedError
-
-    def next( self ):
-        """Return the next item in the queue, removing it from the queue"""
-        return NotImplementedError
 
 
 class SaveQueueHandler( IQueueHandler, ILockingQueue ):

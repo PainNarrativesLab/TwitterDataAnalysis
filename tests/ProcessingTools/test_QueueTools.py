@@ -1,8 +1,7 @@
 import unittest
 
-from ProcessingTools.QueueTools import SaveQueueHandler
+from Queues.QueueTools import SaveQueueHandler
 from TestingTools.Factories import DummyIListenerFactory
-from environment import *
 
 
 class SaveQueueHandlerTests(unittest.TestCase):

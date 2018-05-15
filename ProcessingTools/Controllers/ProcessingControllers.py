@@ -17,7 +17,7 @@ from tornado import gen
 import DataTools.TweetORM
 import environment
 from DataTools.DataStructures import make_tweet_result, make_user_result
-from ProcessingTools.QueueTools import IQueueHandler
+from Queues.Interfaces import IQueueHandler
 from Servers.Mixins import ResponseStoreMixin
 from TextProcessors import Tokenizers, Processors
 # instrumenting to determine if running async
@@ -31,6 +31,8 @@ def response_complete( responses, response ):
         responses.remove( response )
 
 
+
+
 class IProcessingController( ResponseStoreMixin ):
 
     def __init__( self, saveQueueHandler: IQueueHandler ):
@@ -38,10 +40,10 @@ class IProcessingController( ResponseStoreMixin ):
         :type saveQueueHandler: Service class which puts the word in the queue to be saved, so that's not a bottleneck
         """
         self.count_of_processed = 0
-        self.sentence_tokenizer = Tokenizers.SentenceTokenizer()
-        self.word_tokenizer = Tokenizers.WordTokenizer()
         self.QueueHandler = saveQueueHandler
         self._word_processors = [ ]
+        self.sentence_tokenizer = Tokenizers.SentenceTokenizer()
+        self.word_tokenizer = Tokenizers.WordTokenizer()
         super().__init__()
 
     def load_word_processor( self, processor: Processors.IProcessor ):
@@ -85,18 +87,6 @@ class IProcessingController( ResponseStoreMixin ):
 
             self.QueueHandler.enque( result )
             # self.add_response(response)
-
-            # response.add_done_callback(response_complete(self.responses, response))
-            # response.add_done_callback(self.prune_responses)
-            # response.add_done_callback(lambda x : self.remove_response(response))
-            # if type(response) is not None:
-            #     self.responses.append( response )
-
-    #
-    # def prune_responses( self ):
-    #     print( 'pruning: %s responses' % len( self.responses ) )
-    #     self.responses = [ self.responses.remove( r ) for r in self.responses if r is not None and r.done() ]
-    #     print( 'pruning complete: %s responses' % len( self.responses ) )
 
     def _processSentence( self, sentenceIndex: int, sentence: str, objId: int ):
         """

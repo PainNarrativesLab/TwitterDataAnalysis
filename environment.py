@@ -14,36 +14,30 @@ MAPPING_PATH = "%s/TwitterDataAnalysis/mappings" % BASE
 CREDENTIAL_FILE = '%s/private_credentials/sql_local_credentials.xml' % BASE
 PROJ_BASE = "%s/TwitterDataAnalysis" % ROOT
 
-# Project folders
+# Project folder paths
 TEXT_TOOLS_PATH = "%s/TextTools/" % BASE
 TWITTER_MINING_PATH = "%s/TwitterMining/" % BASE
 
-# Logging
+# Logging folder paths
 LOG_FOLDER_PATH = "%s/Desktop/TwitterDataAnalysisLogs" % ROOT
 PROFILING_LOG_FOLDER_PATH = "%s/profiling" % LOG_FOLDER_PATH
 
 # add everyone to path explicitly
 sys.path.append( PROJ_BASE )
-
-
 sys.path.append( TEXT_TOOLS_PATH )
 sys.path.append( "%s/DataTools" % PROJ_BASE )
 sys.path.append( "%s/Executables" % PROJ_BASE )
-
 sys.path.append( "%s/Loggers" % PROJ_BASE )
 sys.path.append( '%s/TextTools/TextProcessors' % BASE )
 sys.path.append( "%s/ProcessingTools" % PROJ_BASE )
 sys.path.append( "%s/profiling" % PROJ_BASE )
 sys.path.append( '%s/Servers' % BASE )
 
-
 # the directory that contains various common custom classes
 sys.path.append( '%s/Dropbox/iPythonFiles/BaseClasses' % ROOT )
 
 
-
-
-############# DB files
+####################### DB files ##################################
 # sqlite db files
 DB_FOLDER = "%s/Desktop/TwitterDataAnalysisLogs/dbs" % ROOT
 SQLITE_FILE = '%s/wordmapping.db' % LOG_FOLDER_PATH
@@ -65,7 +59,7 @@ def sqlite_file_connection_string_generator( folder_path=DB_FOLDER, max_files=MA
 
 
 # Database server url
-DB_PORT = 8592
+DB_PORT = 8692
 DB_URL = "http://127.0.0.1:%s" % DB_PORT
 
 # How many transactions to queue before
@@ -88,8 +82,15 @@ TEST = True
 # a transaction will get stuck. This flag gets picked
 # up at the head of DataRespositories and calls session.rollback()
 PLEASE_ROLLBACK = False
-
 PRINT_STEPS = False
 
-# default tweet id to use in dev
-TESTING_TWEET_ID = 123456789
+
+####################### Log files #################################
+PROCESSING_ENQUE_LOG_FILE = "%s/processing-enque.csv" % PROFILING_LOG_FOLDER_PATH
+CLIENT_SEND_LOG_FILE = "%s/client-send.csv" % PROFILING_LOG_FOLDER_PATH
+CLIENT_ENQUE_LOG_FILE = "%s/client-enque.csv" % PROFILING_LOG_FOLDER_PATH
+
+SERVER_RECEIVE_LOG_FILE = "%s/server-receive.csv" % PROFILING_LOG_FOLDER_PATH
+SERVER_SAVE_LOG_FILE = "%s/server-save.csv" % PROFILING_LOG_FOLDER_PATH
+QUERY_LOG = '%s/QUERY_LOG.csv' % LOG_FOLDER_PATH
+QUERY_TIME_LOG = '%s/QUERY_TIME_LOG.csv' % LOG_FOLDER_PATH

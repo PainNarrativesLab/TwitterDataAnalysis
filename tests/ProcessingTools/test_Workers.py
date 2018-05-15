@@ -1,12 +1,11 @@
 import unittest
+
+import Queues.Interfaces
 from ProcessingTools.Workers import *
-from ProcessingTools.ProcessingControllers import *
-import QueueTools
+from Queues import QueueTools
 from DataTools import TweetORM
 from DataTools import Cursors
-from unittest.mock import patch
 from threading import Thread
-import threading
 
 
 class StringProcessingWorkerTest(unittest.TestCase):
@@ -15,7 +14,7 @@ class StringProcessingWorkerTest(unittest.TestCase):
 
     # @patch( 'QueueTools.IQueueHandler' )
     def test_intializing_for_class_makes_available_to_instances(self):
-        queue = QueueTools.IQueueHandler()
+        queue = Queues.Interfaces.IQueueHandler()
         self.obj.initialize('cursor', queue, 'processor')
         # create a new instance
         obj = StringProcessingWorker()
@@ -26,7 +25,7 @@ class StringProcessingWorkerTest(unittest.TestCase):
     @unittest.skip
     def test_cursor_behaves_as_expected(self):
         cursor = Cursors.TweetCursor()
-        queue = QueueTools.IQueueHandler()
+        queue = Queues.Interfaces.IQueueHandler()
         self.obj.initialize(cursor, queue, 'processor')
         r1 = self.obj.cursor.next_tweet()
         self.assertIsInstance(r1, TweetORM.Tweet)
@@ -42,7 +41,7 @@ class StringProcessingWorkerTest(unittest.TestCase):
         # Load cursor for tweet ids
         threads = []
         cursor = Cursors.TweetCursor()
-        queue = QueueTools.IQueueHandler()
+        queue = Queues.Interfaces.IQueueHandler()
         self.obj.initialize(cursor, queue, 'processor')
         r1 = []
         r2 = []

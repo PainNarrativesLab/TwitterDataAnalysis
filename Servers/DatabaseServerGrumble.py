@@ -3,11 +3,13 @@ Created by adam on 3/27/18
 """
 
 __author__ = 'adam'
-
+import environment
 
 def main():
     # Imports inside the function to help with
     # running on cluster
+    import asyncio
+
     import tornado.ioloop
     import tornado.web
     import tornado.httpserver
@@ -32,6 +34,7 @@ def main():
         server.add_sockets( sockets )
         print( "Listening on %s" % environment.DB_PORT )
         # Enter loop and listen for requests
+        # NB this is a wrapper around the asyncio loop for the thread
         tornado.ioloop.IOLoop.current().start()
 
     except ShutdownCommanded as e:
@@ -52,4 +55,5 @@ def main():
 
 
 if __name__ == "__main__":
+    import environment
     main()

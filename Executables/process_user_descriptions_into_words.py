@@ -6,22 +6,16 @@ __author__ = 'adam'
 
 
 def main():
-    from ProcessingTools.Errors import AllResponsesComplete
-
-    import environment
-
     import time
-    from time import sleep
 
     import DataTools.Cursors
     from Loggers.FileLoggers import FileWritingLogger
-    from ProcessingTools.ProcessingControllers import UserProcessingController, IProcessingController
+    from Controllers.ProcessingControllers import UserProcessingController, IProcessingController
     from Servers.ClientSide import ServerQueueDropin
     from TextProcessors.Filters import URLFilter, UsernameFilter, PunctuationFilter, NumeralFilter, StopwordFilter
     from TextProcessors.Modifiers import WierdBPrefixConverter, CaseConverter
     from TextProcessors.Processors import SingleWordProcessor
 
-    from TestingTools.DummyCursors import DummyUserCursor
     # How many users to process
     LIMIT_USERS = 500
 

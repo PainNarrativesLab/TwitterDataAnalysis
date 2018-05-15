@@ -18,8 +18,8 @@ import environment
 # Logging
 # LOG_FOLDER_PATH = "%s/Desktop/TwitterDataAnalysisLogs" % BASE
 
-query_log = '%s/query_log.csv' % environment.LOG_FOLDER_PATH
-query_time_log = '%s/query_time_log.csv' % environment.LOG_FOLDER_PATH
+query_log = '%s/QUERY_LOG.csv' % environment.LOG_FOLDER_PATH
+query_time_log = '%s/QUERY_TIME_LOG.csv' % environment.LOG_FOLDER_PATH
 
 request_log = '%s/request_log.csv' % environment.LOG_FOLDER_PATH
 request_time_log = '%s/request_time_log.csv' % environment.LOG_FOLDER_PATH

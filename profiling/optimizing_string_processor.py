@@ -22,11 +22,10 @@ from OptimizationTools import *
 # Initialize the tools for filtering and modifying the individual tweet words
 import TextProcessors.Processors
 from TextProcessors.Modifiers import *
-from TextProcessors.Processors import *
 import TextProcessors.Filters as Filters
 from ProcessingTools import Listeners
 from ProcessingTools import Workers
-import ProcessingTools.QueueTools as QT
+import Queues.QueueTools as QT
 
 import DataTools.Cursors
 import ConstantsAndUtilities

@@ -4,12 +4,10 @@ from ConstantsAndUtilities import *
 
 sys.path.append('%s/TextTools/TextProcessors' % BASE)  # the directory that contains my_pkg
 
-from ProcessingControllers import *
+from Controllers.ProcessingControllers import *
 
 from TestingTools.DataAndFunctionsForTesting import *
 from TestingTools.Factories import *
-
-from QueueTools import *
 
 
 class TweetProcessorUnitTests(unittest.TestCase):

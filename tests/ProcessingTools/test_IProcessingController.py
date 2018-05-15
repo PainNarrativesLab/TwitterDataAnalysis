@@ -1,7 +1,6 @@
 import unittest
 
-from DataTools.DataStructures import Result
-from ProcessingControllers import *
+from Controllers.ProcessingControllers import *
 from TestingTools.DataAndFunctionsForTesting import *
 from TestingTools.Factories import DummyQueueFactory, UserFactory
 

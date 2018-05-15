@@ -41,11 +41,11 @@ class FileWritingLogger(ILogger):
 #     Handles logging and printing information about database events
 #     """
 #
-#     def __init__(self, client_send_log_file=DEFAULT_LOG_FILE_NAME):
+#     def __init__(self, CLIENT_SEND_LOG_FILE=DEFAULT_LOG_FILE_NAME):
 #         self.log = ''
 #         super().__init__()
-#         self.client_send_log_file = client_send_log_file
+#         self.CLIENT_SEND_LOG_FILE = CLIENT_SEND_LOG_FILE
 #         # self.UPATH = os.getenv("HOME")
-#         # self.client_send_log_file = '%s/Desktop/%s' % self.UPATH, client_send_log_file
-#         # self.client_send_log_file = "application_search.log"
-#         self.set_log_file(self.client_send_log_file)
+#         # self.CLIENT_SEND_LOG_FILE = '%s/Desktop/%s' % self.UPATH, CLIENT_SEND_LOG_FILE
+#         # self.CLIENT_SEND_LOG_FILE = "application_search.log"
+#         self.set_log_file(self.CLIENT_SEND_LOG_FILE)

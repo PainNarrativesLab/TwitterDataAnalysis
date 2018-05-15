@@ -19,7 +19,7 @@ import DataTools.DataStructures
 import DataTools.TweetORM
 import DataTools.WordORM
 from ProcessingTools.Listeners import IListener
-from ProcessingTools.QueueTools import IQueueHandler
+from Queues.Interfaces import IQueueHandler
 
 engine = create_engine('sqlite://')
 session = scoped_session(sessionmaker(bind=engine))

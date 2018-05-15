@@ -7,6 +7,7 @@ import sqlite3
 from collections import deque
 
 import tornado.web
+from tornado import gen
 from progress.spinner import MoonSpinner, Spinner
 
 import environment
@@ -17,10 +18,6 @@ from profiling.OptimizingTools import time_and_log_query, log_start_stop
 
 # instrumenting to determine if running async
 from profiling.OptimizingTools import timestamp_writer
-server_receive_log_file = "%s/server-receive.csv" % environment.PROFILING_LOG_FOLDER_PATH
-server_save_log_file = "%s/server-save.csv" % environment.PROFILING_LOG_FOLDER_PATH
-query_log = '%s/query_log.csv' % environment.LOG_FOLDER_PATH
-query_time_log = '%s/query_time_log.csv' % environment.LOG_FOLDER_PATH
 
 
 class UserDescriptionHandler( tornado.web.RequestHandler ):
@@ -41,8 +38,8 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
 
     logger = FileWritingLogger( name='UserDescriptionHandler' )
 
-    def __init__( self, application, request, **kwargs ):
-        super().__init__( application, request )
+    # def __init__( self, application, request, **kwargs ):
+    #     super().__init__( application, request )
 
     @classmethod
     def increment_request_count( cls ):
@@ -59,12 +56,12 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
         cls._queryCount += 1
 
     @classmethod
-    @log_start_stop([query_time_log])
+    @log_start_stop( [ environment.QUERY_TIME_LOG ] )
     def save_queued( cls ):
         """Saves all the items in the queue to the db"""
         cls.increment_query_count()
 
-        timestamp_writer( server_save_log_file )
+        timestamp_writer( environment.SERVER_SAVE_LOG_FILE )
         try:
             # We alternate between several db files to avoid locking
             # problems.
@@ -119,16 +116,17 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
         print( "%s still in queue" % len( UserDescriptionHandler.results ) )
         type( self ).save_queued()
         print( "%s in queue after flush" % len( UserDescriptionHandler.results ) )
-
         self.write( "Hello, world" )
 
-    @log_start_stop([query_log])
+    # @log_start_stop([environment.QUERY_LOG])
+    @gen.coroutine
     def post( self ):
         """Handles the submision of a list of
         new user-word records.
         """
+        timestamp_writer( environment.SERVER_RECEIVE_LOG_FILE )
+
         try:
-            timestamp_writer( server_receive_log_file )
             # decode json
             payload = Helpers.decode_payload( self.request.body )
 
@@ -142,7 +140,7 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
                 type( self ).enqueue_result( result )
 
             # Send success response
-            self.write( "success" )
+            yield self.write( "success" )
 
         except DBExceptions as e:
             # self.logger.log_error('db error: %s' % e.message)

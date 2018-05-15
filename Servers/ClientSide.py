@@ -1,11 +1,12 @@
 """
 Created by adam on 3/27/18
 """
-from ProcessingTools.QueueTools import IQueueHandler
+from ProcessingTools.Queues.Interfaces import IQueueHandler
 from Servers.Mixins import ResponseStoreMixin
 __author__ = 'adam'
 
 from tornado import gen
+import asyncio
 from tornado.httpclient import AsyncHTTPClient
 from tornado.log import gen_log
 from tornado.simple_httpclient import SimpleAsyncHTTPClient
@@ -16,7 +17,8 @@ from Servers import Helpers
 from collections import deque
 
 # instrumenting to determine if running async
-from profiling.OptimizingTools import write_start_stop, timestamp_writer, standard_timestamp
+from profiling.OptimizingTools import timestamp_writer
+
 client_send_log_file = "%s/client-send.csv" % environment.PROFILING_LOG_FOLDER_PATH
 client_enque_log_file = "%s/client-enque.csv" % environment.PROFILING_LOG_FOLDER_PATH
 
@@ -57,8 +59,7 @@ class Client( ProcessIdHaver, ResponseStoreMixin ):
 
     @gen.coroutine
     def send( self, result ):
-        # def send( self, result ):
-        """Post's the result to the server, yields a future"""
+        """Posts the result to the server, yields a future"""
         self.sentCount += 1
 
         # write the timestamp to file
@@ -67,16 +68,13 @@ class Client( ProcessIdHaver, ResponseStoreMixin ):
         timestamp_writer( client_send_log_file )
 
         payload = Helpers.encode_payload( result )
-        # self.http_client.fetch( self.url, method="POST", body=payload )
 
-        response = yield self.http_client.fetch( self.url, method="POST", body=payload )
+        response = yield from self.http_client.fetch( self.url, method="POST", body=payload )
         # response = yield Helpers.send_result(self.http_client, self.url, result)
         # In Python versions prior to 3.3, returning a value from
         # a generator is not allowed and you must use
         #   raise gen.Return(response.body)
         # instead.
-
-        self.add_response(response)
         return response
 
     def send_flush_command( self, repeat=100 ):
@@ -87,11 +85,24 @@ class Client( ProcessIdHaver, ResponseStoreMixin ):
         for _ in range( 0, repeat ):
             self.http_client.fetch( self.url, method="GET" )
 
-    def send_shutdown_command( self ):
+    def async_send_flush_command( self, repeat=100 ):
+        """Instructs the server to flush the queue of whichever
+        handler receives it to the db. The signal thus needs to be
+        sent several times to make sure all the handlers receive it
+        """
+        tasks = [ asyncio.ensure_future(self.http_client.fetch( self.url, method="GET" )) for _ in range( 0, repeat ) ]
+        for future in asyncio.as_completed(tasks):
+            data = yield from future
+
+    def send_shutdown_command( self, future=None ):
+        """Instructs the server to shut down"""
         self.http_client.fetch( self.url, method="DELETE" )
+        if future is not None and not future.done():
+            future.set_result('shutdown complete')
 
     def close( self ):
         self.http_client.close()
+
 
 # __slots__ = ['batch', 'batch_size', 'save', 'flush']
 class ServerQueueDropin( IQueueHandler, ProcessIdHaver ):

@@ -3,24 +3,18 @@ Created by adam on 12/15/16
 """
 __author__ = 'adam'
 
-from OptimizationTools import *
-
 from threading import Thread
 
-from environment import *
 import ConstantsAndUtilities
 
 
 # Initialize the tools for filtering and modifying the individual tweet words
 import TextProcessors.Processors
-from TextProcessors.Filters import *
 from TextProcessors.Modifiers import *
-from TextProcessors.Processors import *
 
-from ProcessingTools import ProcessingControllers
 from ProcessingTools import Listeners
 from ProcessingTools import Workers
-import ProcessingTools.QueueTools as QT
+import Queues.QueueTools as QT
 
 import DataTools.Cursors
 

@@ -1,7 +1,6 @@
 import unittest
 
-from ProcessingControllers import *
-from QueueTools import *
+from Controllers.ProcessingControllers import *
 from TestingTools.DataAndFunctionsForTesting import *
 from TestingTools.Factories import *
 

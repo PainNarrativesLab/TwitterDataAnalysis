@@ -7,7 +7,7 @@ from Servers.Errors import BadPayloadException
 __author__ = 'adam'
 
 import tornado
-
+from tornado import gen
 
 # logger = FileWritingLogger(name='Client Response ERROR')
 
@@ -33,7 +33,7 @@ def decode_payload( payload ):
 #         pass
 
 
-@tornado.gen.coroutine
+@gen.coroutine
 def send_result( client, url, result ):
     """Uses the client to make a request"""
     payload = encode_payload( result )

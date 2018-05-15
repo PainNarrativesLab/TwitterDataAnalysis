@@ -4,8 +4,7 @@ Created by adam on 11/23/16
 __author__ = 'adam'
 
 from environment import *
-import ProcessingTools.ProcessingControllers as ProcessingControllers
-import threading
+import Controllers.ProcessingControllers as ProcessingControllers
 
 
 class IWorker(object):
@@ -46,7 +45,7 @@ class StringProcessingWorker(IWorker):
     def initialize(cls, cursor, queue, word_processor):
         cls.cursor = cursor
         # cls.queue = queue
-        cls.processor = ProcessingControllers.TweetProcessingController(queue)
+        cls.processor = ProcessingControllers.TweetProcessingController( queue )
         cls.processor.load_word_processor(word_processor)
 
     @classmethod
