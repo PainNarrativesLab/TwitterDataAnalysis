@@ -42,7 +42,8 @@ class AsyncServerQueueDropin( IQueueHandler, ProcessIdHaver ):
         # write the timestamp to file
         # we aren't using the decorator for fear
         # it will mess up the async
-        timestamp_writer( environment.CLIENT_ENQUE_LOG_FILE )
+        # timestamp_writer( environment.CLIENT_ENQUE_LOG_FILE )
+
         resultList = [resultList] if not isinstance(resultList, list) else resultList
 
         [ self.store.appendleft( r ) for r in resultList ]
@@ -58,7 +59,8 @@ class AsyncServerQueueDropin( IQueueHandler, ProcessIdHaver ):
 
     async def handle_send( self, future: asyncio.Future ):
         """Passes the current queue items to the client
-        and clears queue
+        and clears queue.
+        This bastard not being async wasted a week of my live
         :type future: asyncio.Future
         """
         b = [ self.store.pop() for _ in range( 0, self.batch_size ) ]

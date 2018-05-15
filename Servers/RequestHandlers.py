@@ -27,7 +27,7 @@ class QHelper(object):
 
     def __init__(self, batch_size=environment.DB_QUEUE_SIZE):
         self._queryCount = 0
-        self.batch_size
+        self.batch_size = batch_size
         self.store = deque()
 
     def increment_query_count( self ):
@@ -38,15 +38,15 @@ class QHelper(object):
 
     @gen.coroutine
     def enqueue( self, result ):
-        self.store.appendleft(result)
-        if len( self.results ) > self.batch_size:
+        rt = (result.text, result.sentence_index, result.word_index, result.id)
+        self.store.appendleft(rt)
+        if len( self.store ) > self.batch_size:
             yield from self.save_queued()
 
     async def save_queued( self ):
         """Saves all the items in the queue to the db"""
-        # self.increment_query_count()
+        self.increment_query_count()
         async with lock:
-            # timestamp_writer( environment.SERVER_SAVE_LOG_FILE )
             try:
                 # We alternate between several db files to avoid locking
                 # problems.
@@ -56,7 +56,7 @@ class QHelper(object):
 
                 conn = sqlite3.connect( file_path )
 
-                rs = [ self.results.pop() for i in range( 0, len( self.results ) ) ]
+                rs = [ self.store.pop() for i in range( 0, len( self.store ) ) ]
 
                 userQuery = """INSERT INTO word_map_deux (word, sentence_index, word_index, user_id) 
                     VALUES (?, ?, ?, ?)"""
@@ -67,6 +67,7 @@ class QHelper(object):
             except Exception as e:
                 print( "error for file %s : %s" % (file_path, e) )
         # lock is now released
+        return True
 
 
 class UserDescriptionHandler( tornado.web.RequestHandler ):
@@ -99,51 +100,51 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
         # add to the stored request count.
         cls._requestCount += 1
 
-    @classmethod
-    def increment_query_count( cls ):
-        # increment the notification spinner
-        cls.spinner2.next()
-        # add to the stored request count.
-        cls._queryCount += 1
+    # @classmethod
+    # def increment_query_count( cls ):
+    #     # increment the notification spinner
+    #     cls.spinner2.next()
+    #     # add to the stored request count.
+    #     cls._queryCount += 1
 
-    @classmethod
-    @log_start_stop( [ environment.QUERY_TIME_LOG ] )
-    def save_queued( cls ):
-        """Saves all the items in the queue to the db"""
-        cls.increment_query_count()
+    # @classmethod
+    # @log_start_stop( [ environment.QUERY_TIME_LOG ] )
+    # def save_queued( cls ):
+    #     """Saves all the items in the queue to the db"""
+    #     cls.increment_query_count()
+    #
+    #     # timestamp_writer( environment.SERVER_SAVE_LOG_FILE )
+    #     try:
+    #         # We alternate between several db files to avoid locking
+    #         # problems.
+    #         file_path = next( file_path_generator )
+    #         timestamped_count_writer(environment.SERVER_SAVE_LOG_FILE, cls._queryCount, file_path)
+    #
+    #         conn = sqlite3.connect( file_path )
+    #
+    #         rs = [ cls.results.pop() for i in range( 0, len( cls.results ) ) ]
+    #
+    #         userQuery = """INSERT INTO word_map_deux (word, sentence_index, word_index, user_id)
+    #             VALUES (?, ?, ?, ?)"""
+    #         conn.executemany( userQuery, rs )
+    #         conn.commit()
+    #         conn.close()
+    #
+    #     except Exception as e:
+    #         print( "error for file %s : %s" % (file_path, e) )
 
-        # timestamp_writer( environment.SERVER_SAVE_LOG_FILE )
-        try:
-            # We alternate between several db files to avoid locking
-            # problems.
-            file_path = next( file_path_generator )
-            timestamped_count_writer(environment.SERVER_SAVE_LOG_FILE, cls._queryCount, file_path)
-
-            conn = sqlite3.connect( file_path )
-
-            rs = [ cls.results.pop() for i in range( 0, len( cls.results ) ) ]
-
-            userQuery = """INSERT INTO word_map_deux (word, sentence_index, word_index, user_id) 
-                VALUES (?, ?, ?, ?)"""
-            conn.executemany( userQuery, rs )
-            conn.commit()
-            conn.close()
-
-        except Exception as e:
-            print( "error for file %s : %s" % (file_path, e) )
-
-    @classmethod
-    def enqueue_result( cls, result ):
-        cls.increment_request_count()
-
-        try:
-            rt = (result.text, result.sentence_index, result.word_index, result.id)
-            cls.results.appendleft( rt )
-            if len( cls.results ) > environment.DB_QUEUE_SIZE:
-                cls.save_queued()
-
-        except Exception as e:
-            print( "error when enquing %s" % e )
+    # @classmethod
+    # def enqueue_result( cls, result ):
+    #     cls.increment_request_count()
+    #
+    #     try:
+    #         rt = (result.text, result.sentence_index, result.word_index, result.id)
+    #         cls.results.appendleft( rt )
+    #         if len( cls.results ) > environment.DB_QUEUE_SIZE:
+    #             cls.save_queued()
+    #
+    #     except Exception as e:
+    #         print( "error when enquing %s" % e )
 
     @classmethod
     def shutdown( cls ):
@@ -163,13 +164,13 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
 
     #### Actual handler methods ####
 
-    def get( self ):
+    async def get( self ):
         """Flushes any remaining results in the queue to the dbs"""
         print("Flush called on handler")
         print( "%s still in queue" % len( UserDescriptionHandler.results ) )
-        type( self ).save_queued()
+        await type( self ).q.save_queued()
         print( "%s in queue after flush" % len( UserDescriptionHandler.results ) )
-        self.write( "Hello, world" )
+        self.write( "success" )
 
     # @log_start_stop([environment.QUERY_LOG])
     @gen.coroutine
@@ -177,7 +178,10 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
         """Handles the submision of a list of
         new user-word records.
         """
-        timestamp_writer( environment.SERVER_RECEIVE_LOG_FILE )
+        # timestamp_writer( environment.SERVER_RECEIVE_LOG_FILE )
+
+        type(self).increment_request_count()
+        timestamped_count_writer(environment.SERVER_RECEIVE_LOG_FILE, type(self)._requestCount)
 
         try:
             # decode json
