@@ -17,15 +17,16 @@ from Servers.Errors import DBExceptions, ShutdownCommanded
 from profiling.OptimizingTools import time_and_log_query, log_start_stop
 
 # instrumenting to determine if running async
-from profiling.OptimizingTools import timestamp_writer
+from profiling.OptimizingTools import timestamp_writer, timestamped_count_writer
 
+file_path_generator = environment.sqlite_file_connection_string_generator()
 
 class UserDescriptionHandler( tornado.web.RequestHandler ):
     """Handles user description requests """
 
     # share the generator at the class level so that
     # we have a common count
-    file_path_generator = environment.sqlite_file_connection_string_generator()
+    # file_path_generator = environment.sqlite_file_connection_string_generator()
     # Store results at class level so that any instance
     # can initiate a save for the queue
     results = deque()
@@ -61,11 +62,12 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
         """Saves all the items in the queue to the db"""
         cls.increment_query_count()
 
-        timestamp_writer( environment.SERVER_SAVE_LOG_FILE )
+        # timestamp_writer( environment.SERVER_SAVE_LOG_FILE )
         try:
             # We alternate between several db files to avoid locking
             # problems.
-            file_path = next( cls.file_path_generator )
+            file_path = next( file_path_generator )
+            timestamped_count_writer(environment.SERVER_SAVE_LOG_FILE, cls._queryCount, file_path)
 
             conn = sqlite3.connect( file_path )
 
@@ -113,6 +115,7 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
 
     def get( self ):
         """Flushes any remaining results in the queue to the dbs"""
+        print("Flush called on handler")
         print( "%s still in queue" % len( UserDescriptionHandler.results ) )
         type( self ).save_queued()
         print( "%s in queue after flush" % len( UserDescriptionHandler.results ) )

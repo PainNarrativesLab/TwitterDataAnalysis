@@ -17,10 +17,11 @@ from Servers import Helpers
 from collections import deque
 
 # instrumenting to determine if running async
-from profiling.OptimizingTools import timestamp_writer
+from profiling.OptimizingTools import timestamp_writer, timestamped_count_writer
 
 client_send_log_file = "%s/client-send.csv" % environment.PROFILING_LOG_FOLDER_PATH
 client_enque_log_file = "%s/client-enque.csv" % environment.PROFILING_LOG_FOLDER_PATH
+client_send_count_log_file = "%s/client-send-w-count.csv" % environment.PROFILING_LOG_FOLDER_PATH
 
 
 class NoQueueTimeoutHTTPClient( SimpleAsyncHTTPClient ):
@@ -44,6 +45,7 @@ class Client( ProcessIdHaver, ResponseStoreMixin ):
 
     @classmethod
     def initialize_client( cls ):
+        """Create one client instance for all to share"""
         cls.http_client = AsyncHTTPClient()
 
     def __init__( self ):
@@ -66,6 +68,7 @@ class Client( ProcessIdHaver, ResponseStoreMixin ):
         # we aren't using the decorator for fear
         # it will mess up the async
         timestamp_writer( client_send_log_file )
+        timestamped_count_writer(client_send_count_log_file, self.sentCount, 'sent-count')
 
         payload = Helpers.encode_payload( result )
 
@@ -77,22 +80,25 @@ class Client( ProcessIdHaver, ResponseStoreMixin ):
         # instead.
         return response
 
-    def send_flush_command( self, repeat=100 ):
+    def send_flush_command( self, future=None, repeat=100 ):
         """Instructs the server to flush the queue of whichever
         handler receives it to the db. The signal thus needs to be
         sent several times to make sure all the handlers receive it
         """
+        print('requesting queue flush')
         for _ in range( 0, repeat ):
             self.http_client.fetch( self.url, method="GET" )
 
-    def async_send_flush_command( self, repeat=100 ):
+    async def async_send_flush_command( self, future=None, repeat=50 ):
         """Instructs the server to flush the queue of whichever
         handler receives it to the db. The signal thus needs to be
         sent several times to make sure all the handlers receive it
         """
+        print('requesting queue flush')
+
         tasks = [ asyncio.ensure_future(self.http_client.fetch( self.url, method="GET" )) for _ in range( 0, repeat ) ]
         for future in asyncio.as_completed(tasks):
-            data = yield from future
+            data = await future
 
     def send_shutdown_command( self, future=None ):
         """Instructs the server to shut down"""

@@ -42,7 +42,6 @@ class Control( ResponseStoreMixin ):
         resultsList = self.processor.process( user )
         # create a future which will control when we
         # go on to the next item from the cursor
-        # future.add_done_callback( self.process_next() )
         # Now we push it into the queue along with a future,
         # when the future
         await self.queueHandler.enque( resultsList, future )
@@ -71,7 +70,7 @@ class Control( ResponseStoreMixin ):
                 await self._process( user, future )
 
             except StopIteration as e:
-                print( "%s users processed (not nec done)" % self.count_of_processed )
+                print( "%s users processed" % self.count_of_processed )
                 return overall_future.set_result( True )
 
     # async def process_next( self, *args, **kwargs ):

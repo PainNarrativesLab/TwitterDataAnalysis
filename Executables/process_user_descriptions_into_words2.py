@@ -1,11 +1,14 @@
 """
 Created by adam on 3/27/18
 """
-
 __author__ = 'adam'
+
 import asyncio
 import environment
 import Servers.ServerControlCommander as Commander
+from profiling.OptimizingTools import time_and_log_query, log_start_stop
+from Servers.ClientSide import Client
+
 
 async def run(future):
     import time
@@ -39,7 +42,6 @@ async def run(future):
         CaseConverter()
     ]
 
-
     # First set up the object which will handle applying
     # filters and modifiers to each word
     word_processor = SingleWordProcessor()
@@ -51,7 +53,9 @@ async def run(future):
 
     # Set up the machinery for saving the
     # processed results
-    queueHandler = AsyncServerQueueDropin()
+    c = Client()
+    queueHandler = AsyncServerQueueDropin(batch_size=500, client=c)
+    # future.add_done_callback( c.async_send_flush_command )
 
     # create the command and control
     control = Control( queueHandler=queueHandler, processor=processor )
@@ -60,36 +64,25 @@ async def run(future):
     cursor = DataTools.Cursors.WindowedUserCursor( language='en' )
 
     # Run it
-    print('about to process')
+    print('Starting processing ')
     await control.process_from_cursor(cursor, LIMIT_USERS)
-    print('done processing')
-    future.set_result('Done')
+    print('Processing complete. Processed %s users' % control.count_of_processed)
+    await c.async_send_flush_command()
+    # return the number processed as the value of the future
+    future.set_result(control.count_of_processed)
 
 
+@log_start_stop( [ environment.RUN_TIME_LOG ], text='send queue batch_size=500' )
 def main():
-    print('ready to run')
-
+    print('Starting run')
     loop = asyncio.get_event_loop()
     future = asyncio.Future()
     # wraps as a task (i.e., with a future)
     asyncio.ensure_future(run(future))
-    # future.add_done_callback( Commander.flush_and_shutdown_server )
     loop.run_until_complete(future)
-    Commander.flush_and_shutdown_server()
-    print(future.result())
     loop.close()
-    # exit()
+    return future.result()
 
 
 if __name__ == '__main__':
     main()
-    # print('ready to run')
-    #
-    # loop = asyncio.get_event_loop()
-    # future = asyncio.Future()
-    # # wraps as a task (i.e., with a future)
-    # asyncio.ensure_future(main(future))
-    # loop.run_until_complete(future)
-    # print(future.result())
-    # loop.close()
-    # exit()

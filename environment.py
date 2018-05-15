@@ -87,10 +87,16 @@ PRINT_STEPS = False
 
 ####################### Log files #################################
 PROCESSING_ENQUE_LOG_FILE = "%s/processing-enque.csv" % PROFILING_LOG_FOLDER_PATH
+# records timestamp every time a batch of results are sent to the server
 CLIENT_SEND_LOG_FILE = "%s/client-send.csv" % PROFILING_LOG_FOLDER_PATH
+# records timestamp every time a list of results from a user are pushed into the
+# client side queue from the processor
 CLIENT_ENQUE_LOG_FILE = "%s/client-enque.csv" % PROFILING_LOG_FOLDER_PATH
 
 SERVER_RECEIVE_LOG_FILE = "%s/server-receive.csv" % PROFILING_LOG_FOLDER_PATH
 SERVER_SAVE_LOG_FILE = "%s/server-save.csv" % PROFILING_LOG_FOLDER_PATH
 QUERY_LOG = '%s/QUERY_LOG.csv' % LOG_FOLDER_PATH
 QUERY_TIME_LOG = '%s/QUERY_TIME_LOG.csv' % LOG_FOLDER_PATH
+
+# semi-permanent log of how long it takes to run user processing
+RUN_TIME_LOG = '%s/user-processing-run-time-log.csv' % LOG_FOLDER_PATH
