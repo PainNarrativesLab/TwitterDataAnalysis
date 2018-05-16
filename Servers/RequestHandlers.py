@@ -7,15 +7,13 @@ import sqlite3
 from collections import deque
 
 import tornado.web
-from tornado import gen, locks
 from progress.spinner import MoonSpinner, Spinner
+from tornado import gen, locks
 
 import environment
 from Loggers.FileLoggers import FileWritingLogger
 from Servers import Helpers
 from Servers.Errors import DBExceptions, ShutdownCommanded
-from profiling.OptimizingTools import time_and_log_query, log_start_stop
-
 # instrumenting to determine if running async
 from profiling.OptimizingTools import timestamp_writer, timestamped_count_writer
 
@@ -23,23 +21,27 @@ file_path_generator = environment.sqlite_file_connection_string_generator()
 
 lock = locks.Lock()
 
-class QHelper(object):
 
-    def __init__(self, batch_size=environment.DB_QUEUE_SIZE):
+class QHelper( object ):
+    spinner = MoonSpinner()
+
+    def __init__( self, batch_size=environment.DB_QUEUE_SIZE ):
         self._queryCount = 0
         self.batch_size = batch_size
         self.store = deque()
+        self.file_path = environment.MASTER_DB  # next( file_path_generator )
 
     def increment_query_count( self ):
         # increment the notification spinner
-        # self.spinner2.next()
+        type(self).spinner.next()
         # add to the stored request count.
         self._queryCount += 1
 
     @gen.coroutine
     def enqueue( self, result ):
         rt = (result.text, result.sentence_index, result.word_index, result.id)
-        self.store.appendleft(rt)
+        with (yield lock.acquire()):
+            self.store.appendleft( rt )
         if len( self.store ) > self.batch_size:
             yield from self.save_queued()
 
@@ -50,24 +52,21 @@ class QHelper(object):
             try:
                 # We alternate between several db files to avoid locking
                 # problems.
-                file_path = next( file_path_generator )
+                # file_path = next( file_path_generator )
+                timestamp_writer( environment.SERVER_SAVE_LOG_FILE )
+                # timestamped_count_writer(environment.SERVER_SAVE_LOG_FILE, self._queryCount, self.file_path)
 
-                timestamped_count_writer(environment.SERVER_SAVE_LOG_FILE, self._queryCount, file_path)
+                conn = sqlite3.connect( self.file_path, isolation_level="EXCLUSIVE" )
+                # wrap in a transaction so that other processess can play nice
+                with conn:
+                    rs = [ self.store.pop() for i in range( 0, len( self.store ) ) ]
 
-                conn = sqlite3.connect( file_path )
-
-                rs = [ self.store.pop() for i in range( 0, len( self.store ) ) ]
-
-                userQuery = """INSERT INTO word_map_deux (word, sentence_index, word_index, user_id) 
-                    VALUES (?, ?, ?, ?)"""
-                conn.executemany( userQuery, rs )
-                conn.commit()
-                conn.close()
+                    userQuery = """INSERT INTO word_map_deux (word, sentence_index, word_index, user_id) 
+                        VALUES (?, ?, ?, ?)"""
+                    conn.executemany( userQuery, rs )
 
             except Exception as e:
-                print( "error for file %s : %s" % (file_path, e) )
-        # lock is now released
-        return True
+                print( "error for file %s : %s" % (self.file_path, e) )
 
 
 class UserDescriptionHandler( tornado.web.RequestHandler ):
@@ -78,7 +77,6 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
     # file_path_generator = environment.sqlite_file_connection_string_generator()
     # Store results at class level so that any instance
     # can initiate a save for the queue
-    results = deque()
 
     q = QHelper()
 
@@ -86,12 +84,12 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
     _queryCount = 0
 
     spinner = Spinner( 'Loading ' )
-    spinner2 = MoonSpinner()
 
     logger = FileWritingLogger( name='UserDescriptionHandler' )
 
-    # def __init__( self, application, request, **kwargs ):
-    #     super().__init__( application, request )
+    def __init__( self, application, request, **kwargs ):
+        self.q = QHelper()
+        super().__init__( application, request )
 
     @classmethod
     def increment_request_count( cls ):
@@ -100,51 +98,9 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
         # add to the stored request count.
         cls._requestCount += 1
 
-    # @classmethod
-    # def increment_query_count( cls ):
-    #     # increment the notification spinner
-    #     cls.spinner2.next()
-    #     # add to the stored request count.
-    #     cls._queryCount += 1
-
-    # @classmethod
-    # @log_start_stop( [ environment.QUERY_TIME_LOG ] )
-    # def save_queued( cls ):
-    #     """Saves all the items in the queue to the db"""
-    #     cls.increment_query_count()
-    #
-    #     # timestamp_writer( environment.SERVER_SAVE_LOG_FILE )
-    #     try:
-    #         # We alternate between several db files to avoid locking
-    #         # problems.
-    #         file_path = next( file_path_generator )
-    #         timestamped_count_writer(environment.SERVER_SAVE_LOG_FILE, cls._queryCount, file_path)
-    #
-    #         conn = sqlite3.connect( file_path )
-    #
-    #         rs = [ cls.results.pop() for i in range( 0, len( cls.results ) ) ]
-    #
-    #         userQuery = """INSERT INTO word_map_deux (word, sentence_index, word_index, user_id)
-    #             VALUES (?, ?, ?, ?)"""
-    #         conn.executemany( userQuery, rs )
-    #         conn.commit()
-    #         conn.close()
-    #
-    #     except Exception as e:
-    #         print( "error for file %s : %s" % (file_path, e) )
-
-    # @classmethod
-    # def enqueue_result( cls, result ):
-    #     cls.increment_request_count()
-    #
-    #     try:
-    #         rt = (result.text, result.sentence_index, result.word_index, result.id)
-    #         cls.results.appendleft( rt )
-    #         if len( cls.results ) > environment.DB_QUEUE_SIZE:
-    #             cls.save_queued()
-    #
-    #     except Exception as e:
-    #         print( "error when enquing %s" % e )
+    @property
+    def queue_length( self ):
+        return len( type( self ).q.store )
 
     @classmethod
     def shutdown( cls ):
@@ -166,22 +122,19 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
 
     async def get( self ):
         """Flushes any remaining results in the queue to the dbs"""
-        print("Flush called on handler")
-        print( "%s still in queue" % len( UserDescriptionHandler.results ) )
+        # print( "%s in queue; flushing now" % self.queue_length)
+        # ql = self.queue_length
         await type( self ).q.save_queued()
-        print( "%s in queue after flush" % len( UserDescriptionHandler.results ) )
-        self.write( "success" )
+        self.write( 'success' )
 
-    # @log_start_stop([environment.QUERY_LOG])
     @gen.coroutine
     def post( self ):
         """Handles the submision of a list of
         new user-word records.
         """
-        # timestamp_writer( environment.SERVER_RECEIVE_LOG_FILE )
+        timestamp_writer( environment.SERVER_RECEIVE_LOG_FILE )
 
-        type(self).increment_request_count()
-        timestamped_count_writer(environment.SERVER_RECEIVE_LOG_FILE, type(self)._requestCount)
+        type( self ).increment_request_count()
 
         try:
             # decode json
@@ -193,8 +146,11 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
             for p in payload:
                 # convert to a Result
                 result = Helpers.make_result_from_decoded_payload( p )
+                f = '%s/server-received-userids.csv' % environment.PROFILING_LOG_FOLDER_PATH
+                timestamped_count_writer(f, result.id, 'userid')
+
                 # push it into the queue
-                yield from type( self ).q.enqueue(result)
+                yield from type( self ).q.enqueue( result )
                 # type( self ).enqueue_result( result )
 
             # Send success response

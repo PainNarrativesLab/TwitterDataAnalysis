@@ -59,7 +59,7 @@ def sqlite_file_connection_string_generator( folder_path=DB_FOLDER, max_files=MA
 
 
 # Database server url
-DB_PORT = 8692
+DB_PORT = 8691
 DB_URL = "http://127.0.0.1:%s" % DB_PORT
 
 # How many transactions to queue before

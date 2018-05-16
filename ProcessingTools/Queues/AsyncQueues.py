@@ -42,7 +42,7 @@ class AsyncServerQueueDropin( IQueueHandler, ProcessIdHaver ):
         # write the timestamp to file
         # we aren't using the decorator for fear
         # it will mess up the async
-        # timestamp_writer( environment.CLIENT_ENQUE_LOG_FILE )
+        timestamp_writer( environment.CLIENT_ENQUE_LOG_FILE )
 
         resultList = [resultList] if not isinstance(resultList, list) else resultList
 

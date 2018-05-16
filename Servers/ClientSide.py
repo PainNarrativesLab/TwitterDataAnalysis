@@ -89,7 +89,7 @@ class Client( ProcessIdHaver, ResponseStoreMixin ):
         for _ in range( 0, repeat ):
             self.http_client.fetch( self.url, method="GET" )
 
-    async def async_send_flush_command( self, future=None, repeat=50 ):
+    async def async_send_flush_command( self, future=None, repeat=15 ):
         """Instructs the server to flush the queue of whichever
         handler receives it to the db. The signal thus needs to be
         sent several times to make sure all the handlers receive it

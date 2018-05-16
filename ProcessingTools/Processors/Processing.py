@@ -10,7 +10,7 @@ import Tokenizers
 import DataTools
 from DataTools import TweetORM
 from DataTools.DataStructures import make_user_result
-from profiling.OptimizingTools import timestamp_writer
+from profiling.OptimizingTools import timestamp_writer, timestamped_count_writer
 
 import environment
 
@@ -49,7 +49,6 @@ class AsyncProcessor( object ):
         :param sentenceIndex: The ordinal position of the sentence in the profile
       """
         # write the timestamp to file
-        timestamp_writer( environment.PROCESSING_ENQUE_LOG_FILE )
         return make_user_result( sentenceIndex, wordIndex, text, objId )
 
     def _processSentence( self, sentenceIndex: int, sentence: str, objId: int ):
@@ -75,6 +74,9 @@ class AsyncProcessor( object ):
         else:
             print( type( user ) )
             raise ValueError
+
+        timestamped_count_writer( environment.PROCESSING_ENQUE_LOG_FILE, userId, 'userid')
+
 
         # Split the profile into sentences
         sentences = self.sentence_tokenizer.process( text )

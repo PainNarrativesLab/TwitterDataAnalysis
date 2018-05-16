@@ -1,6 +1,8 @@
 """
 Created by adam on 3/27/18
 """
+from Loggers.Helpers import delete_files
+
 __author__ = 'adam'
 
 import asyncio
@@ -8,6 +10,7 @@ import environment
 import Servers.ServerControlCommander as Commander
 from profiling.OptimizingTools import time_and_log_query, log_start_stop
 from Servers.ClientSide import Client
+from DataTools.SqliteTools import initialize_master_db, delete_master_db
 
 
 async def run(future):
@@ -75,6 +78,12 @@ async def run(future):
 @log_start_stop( [ environment.RUN_TIME_LOG ], text='send queue batch_size=500' )
 def main():
     print('Starting run')
+    # create a clean db and instrumenation logs
+    delete_files(environment.PROFILING_LOG_FOLDER_PATH)
+    delete_master_db()
+    initialize_master_db()
+
+    # start the event loop which will schedule all tasks
     loop = asyncio.get_event_loop()
     future = asyncio.Future()
     # wraps as a task (i.e., with a future)
