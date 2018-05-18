@@ -36,14 +36,19 @@ sys.path.append( '%s/Servers' % BASE )
 # the directory that contains various common custom classes
 sys.path.append( '%s/Dropbox/iPythonFiles/BaseClasses' % ROOT )
 
+############################## Queues ###############################
+# How many transactions to queue before
+# flushing / committing
+DB_QUEUE_SIZE = 1000
+CLIENT_QUEUE_SIZE = 500
 
 ####################### DB files ##################################
 # sqlite db files
 DB_FOLDER = "%s/Desktop/TwitterDataAnalysisLogs/dbs" % ROOT
 SQLITE_FILE = '%s/wordmapping.db' % LOG_FOLDER_PATH
 SQLITE_FILE_CONNECTION_STRING = 'sqlite:////%s' % SQLITE_FILE
-MASTER_DB = '%s/master.db' % LOG_FOLDER_PATH # the file things get compiled into
-MAX_DB_FILES = 10 # the maximum number of db files to create.
+MASTER_DB = '%s/master.db' % LOG_FOLDER_PATH  # the file things get compiled into
+MAX_DB_FILES = 10  # the maximum number of db files to create.
 
 
 def sqlite_file_connection_string_generator( folder_path=DB_FOLDER, max_files=MAX_DB_FILES ):
@@ -58,13 +63,10 @@ def sqlite_file_connection_string_generator( folder_path=DB_FOLDER, max_files=MA
             cnt = 1
 
 
+################################# Database ############################
 # Database server url
 DB_PORT = 8691
 DB_URL = "http://127.0.0.1:%s" % DB_PORT
-
-# How many transactions to queue before
-# flushing / committing to the db
-DB_QUEUE_SIZE = 1000
 
 # ENGINE = 'mysql_test'
 # ENGINE = 'sqlite'
@@ -83,7 +85,6 @@ TEST = True
 # up at the head of DataRespositories and calls session.rollback()
 PLEASE_ROLLBACK = False
 PRINT_STEPS = False
-
 
 ####################### Log files #################################
 PROCESSING_ENQUE_LOG_FILE = "%s/processing-enque.csv" % PROFILING_LOG_FOLDER_PATH

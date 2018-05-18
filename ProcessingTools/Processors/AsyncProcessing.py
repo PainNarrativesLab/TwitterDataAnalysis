@@ -15,7 +15,7 @@ from profiling.OptimizingTools import timestamp_writer, timestamped_count_writer
 import environment
 
 
-class AsyncProcessor( object ):
+class Processor( object ):
     """Handles the text processing of the object"""
 
     def __init__( self ):
@@ -77,7 +77,6 @@ class AsyncProcessor( object ):
 
         timestamped_count_writer( environment.PROCESSING_ENQUE_LOG_FILE, userId, 'userid')
 
-
         # Split the profile into sentences
         sentences = self.sentence_tokenizer.process( text )
 
@@ -85,6 +84,7 @@ class AsyncProcessor( object ):
         # process sentences
         for sentenceIndex, sentence in enumerate( sentences ):
             results += self._processSentence( sentenceIndex, sentence, userId )
+
         return results
 
 

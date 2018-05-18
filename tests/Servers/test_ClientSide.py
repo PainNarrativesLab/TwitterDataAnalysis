@@ -1,4 +1,6 @@
 import unittest
+from aiounittest import futurized, AsyncTestCase
+from unittest.mock import Mock, patch
 
 
 class ClientSideTests( unittest.TestCase ):

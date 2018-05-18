@@ -153,7 +153,9 @@ class TweetProcessingController( IProcessingController ):
 
 
 class UserProcessingController( IProcessingController ):
-    """Handles processing of one user at a time."""
+    """Handles processing of one user at a time.
+    DEPRECATED
+    """
 
     def __init__( self, saveQueueHandler: IQueueHandler ):
         """

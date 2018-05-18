@@ -11,13 +11,13 @@ from progress.spinner import MoonSpinner, Spinner
 from tornado import gen, locks
 
 import environment
-from Loggers.FileLoggers import FileWritingLogger
 from Servers import Helpers
 from Servers.Errors import DBExceptions, ShutdownCommanded
-# instrumenting to determine if running async
+
+# Loggers and instrumentation to determine if running async
+from Loggers.FileLoggers import FileWritingLogger
 from profiling.OptimizingTools import timestamp_writer, timestamped_count_writer
 
-file_path_generator = environment.sqlite_file_connection_string_generator()
 
 lock = locks.Lock()
 
@@ -25,11 +25,11 @@ lock = locks.Lock()
 class QHelper( object ):
     spinner = MoonSpinner()
 
-    def __init__( self, batch_size=environment.DB_QUEUE_SIZE ):
+    def __init__( self, batch_size=environment.DB_QUEUE_SIZE, file_path=environment.MASTER_DB ):
         self._queryCount = 0
         self.batch_size = batch_size
         self.store = deque()
-        self.file_path = environment.MASTER_DB  # next( file_path_generator )
+        self.file_path = file_path
 
     def increment_query_count( self ):
         # increment the notification spinner
@@ -46,16 +46,30 @@ class QHelper( object ):
             yield from self.save_queued()
 
     async def save_queued( self ):
-        """Saves all the items in the queue to the db"""
+        """Saves all the items in the queue to the db
+        To help with isolation levels From
+        https://www.sqlite.org/lang_transaction.html Transactions can be deferred, immediate, or exclusive. The
+        default transaction behavior is deferred. Deferred means that no locks are acquired on the database until the
+        database is first accessed. Thus with a deferred transaction, the BEGIN statement itself does nothing to the
+        filesystem. Locks are not acquired until the first read or write operation. The first read operation against
+        a database creates a SHARED lock and the first write operation creates a RESERVED lock. Because the
+        acquisition of locks is deferred until they are needed, it is possible that another thread or process could
+        create a separate transaction and write to the database after the BEGIN on the current thread has executed.
+        If the transaction is immediate, then RESERVED locks are acquired on all databases as soon as the BEGIN
+        command is executed, without waiting for the database to be used. After a BEGIN IMMEDIATE, no other database
+        connection will be able to write to the database or do a BEGIN IMMEDIATE or BEGIN EXCLUSIVE. Other processes
+        can continue to read from the database, however. An exclusive transaction causes EXCLUSIVE locks to be
+        acquired on all databases. After a BEGIN EXCLUSIVE, no other database connection except for read_uncommitted
+        connections will be able to read the database and no other connection without exception will be able
+        to write  the database until the transaction is complete.
+        """
         self.increment_query_count()
         async with lock:
             try:
-                # We alternate between several db files to avoid locking
-                # problems.
-                # file_path = next( file_path_generator )
                 timestamp_writer( environment.SERVER_SAVE_LOG_FILE )
                 # timestamped_count_writer(environment.SERVER_SAVE_LOG_FILE, self._queryCount, self.file_path)
 
+                # create a new connection so not sharing across threads (which is not allowed)
                 conn = sqlite3.connect( self.file_path, isolation_level="EXCLUSIVE" )
                 # wrap in a transaction so that other processess can play nice
                 with conn:
@@ -72,12 +86,10 @@ class QHelper( object ):
 class UserDescriptionHandler( tornado.web.RequestHandler ):
     """Handles user description requests """
 
-    # share the generator at the class level so that
-    # we have a common count
-    # file_path_generator = environment.sqlite_file_connection_string_generator()
-    # Store results at class level so that any instance
-    # can initiate a save for the queue
-
+    # Queue results at class level so that any instance
+    # can initiate a save for the queue. Also prevents losing
+    # the queue if the batch size has not been reached when a handler
+    # instance is done
     q = QHelper()
 
     _requestCount = 0
@@ -87,9 +99,8 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
 
     logger = FileWritingLogger( name='UserDescriptionHandler' )
 
-    def __init__( self, application, request, **kwargs ):
-        self.q = QHelper()
-        super().__init__( application, request )
+    # def __init__( self, application, request, **kwargs ):
+    #     super().__init__( application, request )
 
     @classmethod
     def increment_request_count( cls ):
@@ -120,11 +131,12 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
 
     #### Actual handler methods ####
 
-    async def get( self ):
+    @gen.coroutine
+    def get( self ):
         """Flushes any remaining results in the queue to the dbs"""
         # print( "%s in queue; flushing now" % self.queue_length)
         # ql = self.queue_length
-        await type( self ).q.save_queued()
+        yield from type( self ).q.save_queued()
         self.write( 'success' )
 
     @gen.coroutine

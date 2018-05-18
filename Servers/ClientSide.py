@@ -19,8 +19,8 @@ from collections import deque
 # instrumenting to determine if running async
 from profiling.OptimizingTools import timestamp_writer, timestamped_count_writer
 
-client_send_log_file = "%s/client-send.csv" % environment.PROFILING_LOG_FOLDER_PATH
-client_enque_log_file = "%s/client-enque.csv" % environment.PROFILING_LOG_FOLDER_PATH
+CLIENT_SEND_LOG_FILE = "%s/client-send.csv" % environment.PROFILING_LOG_FOLDER_PATH
+CLIENT_ENQUE_LOG_FILE = "%s/client-enque.csv" % environment.PROFILING_LOG_FOLDER_PATH
 client_send_count_log_file = "%s/client-send-w-count.csv" % environment.PROFILING_LOG_FOLDER_PATH
 
 
@@ -67,8 +67,9 @@ class Client( ProcessIdHaver, ResponseStoreMixin ):
         # write the timestamp to file
         # we aren't using the decorator for fear
         # it will mess up the async
-        timestamp_writer( client_send_log_file )
-        timestamped_count_writer(client_send_count_log_file, self.sentCount, 'sent-count')
+        timestamp_writer( CLIENT_SEND_LOG_FILE )
+
+        [timestamped_count_writer(client_send_count_log_file, r.id, 'userid') for r in result]
 
         payload = Helpers.encode_payload( result )
 
@@ -112,6 +113,9 @@ class Client( ProcessIdHaver, ResponseStoreMixin ):
 
 # __slots__ = ['batch', 'batch_size', 'save', 'flush']
 class ServerQueueDropin( IQueueHandler, ProcessIdHaver ):
+    """
+    DEPRECATED
+    """
 
     def __init__( self, batch_size=10 ):
         self.id_prefix = 'sqdi.enque'
@@ -132,13 +136,13 @@ class ServerQueueDropin( IQueueHandler, ProcessIdHaver ):
         # write the timestamp to file
         # we aren't using the decorator for fear
         # it will mess up the async
-        timestamp_writer( client_enque_log_file )
+        timestamp_writer( CLIENT_ENQUE_LOG_FILE )
 
         self.enquedCount += 1
         # print(self.pid, self.enquedCount)
         self.store.appendleft( item )
         if len( self.store ) >= self.batch_size:
-            # if we've reached the batch size, send to the server
+            # if we've reached the batch size, send batch to the server
             b = [ self.store.pop() for i in range( 0, self.batch_size ) ]
             self.client.send( b )
             # return response.body

@@ -1,7 +1,6 @@
 """
 Created by adam on 5/4/18
 """
-from ProcessingTools.Processors.Processing import AsyncProcessor
 
 __author__ = 'adam'
 
@@ -9,6 +8,7 @@ import asyncio
 
 from ProcessingTools.Queues import AsyncQueues
 from Servers.Mixins import ResponseStoreMixin
+from ProcessingTools.Processors.AsyncProcessing import Processor
 
 
 class Control( ResponseStoreMixin ):
@@ -19,7 +19,7 @@ class Control( ResponseStoreMixin ):
         """
         self.count_of_processed = 0
         self.queueHandler = AsyncQueues.AsyncServerQueueDropin() if queueHandler is None else queueHandler
-        self.processor = AsyncProcessor() if processor is None else processor
+        self.processor = Processor() if processor is None else processor
         super().__init__()
 
     @property
@@ -51,6 +51,7 @@ class Control( ResponseStoreMixin ):
         """This is the main method which sets the entire
         processing process in motion.
         It iterates over the objects returned by the cursor
+        :param cursor: DB cursor object
         :type limit: int
         """
         self.cursor = cursor
@@ -71,6 +72,8 @@ class Control( ResponseStoreMixin ):
 
             except StopIteration as e:
                 print( "%s users processed" % self.count_of_processed )
+                future = asyncio.Future()
+                await self.queueHandler.flush_queue(future)
                 return overall_future.set_result( True )
 
     # async def process_next( self, *args, **kwargs ):

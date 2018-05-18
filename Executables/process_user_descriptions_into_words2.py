@@ -20,7 +20,7 @@ async def run(future):
     from Loggers.FileLoggers import FileWritingLogger
     # from Controllers.ProcessingControllers import UserProcessingController, IProcessingController
     from ProcessingTools.Controllers.AsyncControl import Control
-    from ProcessingTools.Processors.Processing import AsyncProcessor
+    from ProcessingTools.Processors.AsyncProcessing import Processor
     from ProcessingTools.Queues.AsyncQueues import AsyncServerQueueDropin
 
     # from Servers.ClientSide import ServerQueueDropin
@@ -51,13 +51,13 @@ async def run(future):
     word_processor.add_filters( filters )
     word_processor.add_modifiers( modifiers )
 
-    processor = AsyncProcessor()
+    processor = Processor()
     processor.load_word_processor(word_processor)
 
     # Set up the machinery for saving the
     # processed results
     c = Client()
-    queueHandler = AsyncServerQueueDropin(batch_size=500, client=c)
+    queueHandler = AsyncServerQueueDropin(client=c)
     # future.add_done_callback( c.async_send_flush_command )
 
     # create the command and control
