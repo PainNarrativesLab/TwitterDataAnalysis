@@ -14,7 +14,7 @@ import environment
 from Servers import Helpers
 from Servers.Errors import DBExceptions, ShutdownCommanded
 
-# Loggers and instrumentation to determine if running async
+# Loggers and instrumentation
 from Loggers.FileLoggers import FileWritingLogger
 from profiling.OptimizingTools import timestamp_writer, timestamped_count_writer
 
@@ -47,8 +47,8 @@ class QHelper( object ):
 
     async def save_queued( self ):
         """Saves all the items in the queue to the db
-        To help with isolation levels From
-        https://www.sqlite.org/lang_transaction.html Transactions can be deferred, immediate, or exclusive. The
+        To help with isolation levels From https://www.sqlite.org/lang_transaction.html
+        Transactions can be deferred, immediate, or exclusive. The
         default transaction behavior is deferred. Deferred means that no locks are acquired on the database until the
         database is first accessed. Thus with a deferred transaction, the BEGIN statement itself does nothing to the
         filesystem. Locks are not acquired until the first read or write operation. The first read operation against
@@ -66,8 +66,8 @@ class QHelper( object ):
         self.increment_query_count()
         async with lock:
             try:
-                timestamp_writer( environment.SERVER_SAVE_LOG_FILE )
-                # timestamped_count_writer(environment.SERVER_SAVE_LOG_FILE, self._queryCount, self.file_path)
+                if environment.TIME_LOGGING:
+                    timestamp_writer( environment.SERVER_SAVE_TIMESTAMP_LOG_FILE )
 
                 # create a new connection so not sharing across threads (which is not allowed)
                 conn = sqlite3.connect( self.file_path, isolation_level="EXCLUSIVE" )
@@ -119,8 +119,7 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
         server operations. That involves flushing the
         queue and writing to requisite log files"""
         # flush the queue (for this handler instance!)
-        # todo make the queue fully shared
-        cls.save_queued()
+        cls.q.save_queued()
 
         message = "Shutdown called. \n # requests: %s \n # queries: %s" % (cls._requestCount, cls._queryCount)
         print( message )
@@ -144,7 +143,8 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
         """Handles the submision of a list of
         new user-word records.
         """
-        timestamp_writer( environment.SERVER_RECEIVE_LOG_FILE )
+        if environment.TIME_LOGGING:
+            timestamp_writer( environment.SERVER_RECEIVE_TIMESTAMP_LOG_FILE )
 
         type( self ).increment_request_count()
 
@@ -158,12 +158,12 @@ class UserDescriptionHandler( tornado.web.RequestHandler ):
             for p in payload:
                 # convert to a Result
                 result = Helpers.make_result_from_decoded_payload( p )
-                f = '%s/server-received-userids.csv' % environment.PROFILING_LOG_FOLDER_PATH
-                timestamped_count_writer(f, result.id, 'userid')
+
+                if environment.INTEGRITY_LOGGING:
+                    timestamped_count_writer(environment.SERVER_RECEIVE_LOG_FILE, result.id, 'userid')
 
                 # push it into the queue
                 yield from type( self ).q.enqueue( result )
-                # type( self ).enqueue_result( result )
 
             # Send success response
             yield self.write( "success" )

@@ -8,12 +8,8 @@ import environment
 def main():
     # Imports inside the function to help with
     # running on cluster
-    import asyncio
-
-    import tornado.ioloop
-    import tornado.web
-    import tornado.httpserver
-    import tornado.log
+    import sys
+    import tornado
 
     import environment
     from Servers.RequestHandlers import UserDescriptionHandler
@@ -40,7 +36,7 @@ def main():
     except ShutdownCommanded as e:
         print( 'dsg received shutdown' )
         UserDescriptionHandler.save_queued()
-        exit()
+        sys.exit(0)
 
     except KeyboardInterrupt:
         # print("%s still in queue" % len(UserDescriptionHandler.results))
@@ -55,5 +51,4 @@ def main():
 
 
 if __name__ == "__main__":
-    import environment
     main()

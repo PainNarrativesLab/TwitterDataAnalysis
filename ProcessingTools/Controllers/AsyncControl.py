@@ -72,6 +72,9 @@ class Control( ResponseStoreMixin ):
 
             except StopIteration as e:
                 print( "%s users processed" % self.count_of_processed )
+                # Some items may still be in the queue, thus
+                # we need to send them all to the server
+                # before we exit
                 future = asyncio.Future()
                 await self.queueHandler.flush_queue(future)
                 return overall_future.set_result( True )

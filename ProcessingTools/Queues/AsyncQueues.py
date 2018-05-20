@@ -20,8 +20,6 @@ from ProcessingTools.Mixins import ProcessIdHaver
 
 lock = locks.Lock()
 
-client_enque_log_file = "%s/client-enque.csv" % environment.PROFILING_LOG_FOLDER_PATH
-
 
 class AsyncServerQueueDropin( IQueueHandler, ProcessIdHaver ):
 
@@ -44,17 +42,15 @@ class AsyncServerQueueDropin( IQueueHandler, ProcessIdHaver ):
         :param resultList:
         :type future: asyncio.Future
         """
-        # write the timestamp to file
-        # we aren't using the decorator for fear
-        # it will mess up the async
-        timestamp_writer( environment.CLIENT_ENQUE_LOG_FILE )
+        # Handle logging
+        if environment.TIME_LOGGING:
+            timestamp_writer( environment.CLIENT_ENQUE_TIMESTAMP_LOG_FILE )
+        if environment.INTEGRITY_LOGGING:
+            [timestamped_count_writer(environment.CLIENT_ENQUE_LOG_FILE, r.id, 'userid') for r in resultList]
 
-        [timestamped_count_writer(client_enque_log_file, r.id, 'userid') for r in resultList]
-
+        # Actually enque the item
         with (yield lock.acquire()):
             [ self.store.appendleft( r ) for r in resultList ]
-
-        # users = [ users ] if isinstance( users, DataTools.TweetORM.Users ) else users
 
         # if we've reached the batch size, send to the server
         # needs to be greater in case hit limit in middle of list

@@ -28,6 +28,6 @@ setup(
         "nltk",
         "progress",
         "sqlalchemy",
-        "tornado",
+        "tornado", 'requests'
     ],
 )

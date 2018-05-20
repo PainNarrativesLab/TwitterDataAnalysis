@@ -75,7 +75,8 @@ class Processor( object ):
             print( type( user ) )
             raise ValueError
 
-        timestamped_count_writer( environment.PROCESSING_ENQUE_LOG_FILE, userId, 'userid')
+        if environment.INTEGRITY_LOGGING:
+            timestamped_count_writer( environment.PROCESSING_ENQUE_LOG_FILE, userId, 'userid')
 
         # Split the profile into sentences
         sentences = self.sentence_tokenizer.process( text )

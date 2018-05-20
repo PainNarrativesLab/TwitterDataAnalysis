@@ -1,16 +1,19 @@
 """
 Created by adam on 3/27/18
 """
-from Loggers.Helpers import delete_files
 
 __author__ = 'adam'
-
+import sys, os
 import asyncio
 import environment
+
 import Servers.ServerControlCommander as Commander
+
 from profiling.OptimizingTools import time_and_log_query, log_start_stop
 from Servers.ClientSide import Client
 from DataTools.SqliteTools import initialize_master_db, delete_master_db
+from Loggers.Helpers import delete_files
+
 
 
 async def run(future):
@@ -75,11 +78,12 @@ async def run(future):
     future.set_result(control.count_of_processed)
 
 
-@log_start_stop( [ environment.RUN_TIME_LOG ], text='send queue batch_size=500' )
+@log_start_stop( [ environment.RUN_TIME_LOG ], text='send queue batch_size=%s' % environment.CLIENT_QUEUE_SIZE )
 def main():
     print('Starting run')
     # create a clean db and instrumenation logs
     delete_files(environment.PROFILING_LOG_FOLDER_PATH)
+    delete_files(environment.INTEGRITY_LOG_FOLDER_PATH)
     delete_master_db()
     initialize_master_db()
 
@@ -95,3 +99,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    # sys.exit(0)

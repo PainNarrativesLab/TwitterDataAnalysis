@@ -19,10 +19,6 @@ from collections import deque
 # instrumenting to determine if running async
 from profiling.OptimizingTools import timestamp_writer, timestamped_count_writer
 
-CLIENT_SEND_LOG_FILE = "%s/client-send.csv" % environment.PROFILING_LOG_FOLDER_PATH
-CLIENT_ENQUE_LOG_FILE = "%s/client-enque.csv" % environment.PROFILING_LOG_FOLDER_PATH
-client_send_count_log_file = "%s/client-send-w-count.csv" % environment.PROFILING_LOG_FOLDER_PATH
-
 
 class NoQueueTimeoutHTTPClient( SimpleAsyncHTTPClient ):
     def fetch_impl( self, request, callback ):
@@ -64,21 +60,16 @@ class Client( ProcessIdHaver, ResponseStoreMixin ):
         """Posts the result to the server, yields a future"""
         self.sentCount += 1
 
-        # write the timestamp to file
-        # we aren't using the decorator for fear
-        # it will mess up the async
-        timestamp_writer( CLIENT_SEND_LOG_FILE )
+        if environment.TIME_LOGGING:
+            timestamp_writer( environment.CLIENT_SEND_TIMESTAMP_LOG_FILE )
 
-        [timestamped_count_writer(client_send_count_log_file, r.id, 'userid') for r in result]
+        if environment.INTEGRITY_LOGGING:
+            [ timestamped_count_writer( environment.CLIENT_SEND_LOG_FILE, r.id, 'userid' ) for r in result ]
 
         payload = Helpers.encode_payload( result )
 
         response = yield from self.http_client.fetch( self.url, method="POST", body=payload )
-        # response = yield Helpers.send_result(self.http_client, self.url, result)
-        # In Python versions prior to 3.3, returning a value from
-        # a generator is not allowed and you must use
-        #   raise gen.Return(response.body)
-        # instead.
+
         return response
 
     def send_flush_command( self, future=None, repeat=100 ):
@@ -110,58 +101,58 @@ class Client( ProcessIdHaver, ResponseStoreMixin ):
     def close( self ):
         self.http_client.close()
 
-
-# __slots__ = ['batch', 'batch_size', 'save', 'flush']
-class ServerQueueDropin( IQueueHandler, ProcessIdHaver ):
-    """
-    DEPRECATED
-    """
-
-    def __init__( self, batch_size=10 ):
-        self.id_prefix = 'sqdi.enque'
-        super().__init__()
-        self.batch_size = batch_size
-        self.enquedCount = 0
-        self.client = Client()
-        self.store = deque()
-        self.listeners = [ ]
-
-    @gen.coroutine
-    def enque( self, item ):
-        """
-        Push a result into the queue for saving to
-        the db server. Once the batch size has been reached,
-        it will be sent to the server
-        """
-        # write the timestamp to file
-        # we aren't using the decorator for fear
-        # it will mess up the async
-        timestamp_writer( CLIENT_ENQUE_LOG_FILE )
-
-        self.enquedCount += 1
-        # print(self.pid, self.enquedCount)
-        self.store.appendleft( item )
-        if len( self.store ) >= self.batch_size:
-            # if we've reached the batch size, send batch to the server
-            b = [ self.store.pop() for i in range( 0, self.batch_size ) ]
-            self.client.send( b )
-            # return response.body
-        # return None
-
-    @property
-    def sentCount( self ):
-        return self.client.sentCount
-
-    @property
-    def successCount( self ):
-        return self.client.successCount
-
-    @property
-    def errorCount( self ):
-        return self.client.errorCount
-
-    def next( self ):
-        pass
+#
+# # __slots__ = ['batch', 'batch_size', 'save', 'flush']
+# class ServerQueueDropin( IQueueHandler, ProcessIdHaver ):
+#     """
+#     DEPRECATED
+#     """
+#
+#     def __init__( self, batch_size=10 ):
+#         self.id_prefix = 'sqdi.enque'
+#         super().__init__()
+#         self.batch_size = batch_size
+#         self.enquedCount = 0
+#         self.client = Client()
+#         self.store = deque()
+#         self.listeners = [ ]
+#
+#     @gen.coroutine
+#     def enque( self, item ):
+#         """
+#         Push a result into the queue for saving to
+#         the db server. Once the batch size has been reached,
+#         it will be sent to the server
+#         """
+#         # write the timestamp to file
+#         # we aren't using the decorator for fear
+#         # it will mess up the async
+#         timestamp_writer( environment.CLIENT_ENQUE_LOG_FILE )
+#
+#         self.enquedCount += 1
+#         # print(self.pid, self.enquedCount)
+#         self.store.appendleft( item )
+#         if len( self.store ) >= self.batch_size:
+#             # if we've reached the batch size, send batch to the server
+#             b = [ self.store.pop() for i in range( 0, self.batch_size ) ]
+#             self.client.send( b )
+#             # return response.body
+#         # return None
+#
+#     @property
+#     def sentCount( self ):
+#         return self.client.sentCount
+#
+#     @property
+#     def successCount( self ):
+#         return self.client.successCount
+#
+#     @property
+#     def errorCount( self ):
+#         return self.client.errorCount
+#
+#     def next( self ):
+#         pass
 
 
 if __name__ == "__main__":

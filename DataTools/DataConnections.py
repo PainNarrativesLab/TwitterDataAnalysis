@@ -159,7 +159,8 @@ class Connection( object ):
             if self._port is not None:
                 self._port = int( self._port )
             self._username = credentials.find( 'db_user' ).text
-            self._db_name = credentials.find( 'db_name' ).text
+            self._db_name = environment.DB
+            # self._db_name = credentials.find( 'db_name' ).text
             self._password = credentials.find( 'db_password' ).text
 
     def _make_engine( self ):
