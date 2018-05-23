@@ -11,7 +11,7 @@ from Loggers.Helpers import delete_files
 
 g = environment.sqlite_file_connection_string_generator()
 
-query = """CREATE TABLE `word_map_deux` (
+query = """CREATE TABLE `word_map` (
 `tweet_id` int(20) DEFAULT NULL,
   `user_id` int(20) DEFAULT NULL,
   `word` varchar(200) DEFAULT NULL,
@@ -33,12 +33,20 @@ def initialize_working_tables():
             pass
 
 
+def initialize_word_map_db(filepath):
+    try:
+        conn = sqlite3.connect( filepath )
+        with conn:
+            conn.execute( query )
+            conn.commit()
+            conn.close()
+    except:
+        pass
+
+
 def initialize_master_db():
     try:
-        conn = sqlite3.connect( environment.MASTER_DB )
-        conn.execute( query )
-        conn.commit()
-        conn.close()
+        initialize_word_map_db(environment.MASTER_DB)
     except:
         pass
 

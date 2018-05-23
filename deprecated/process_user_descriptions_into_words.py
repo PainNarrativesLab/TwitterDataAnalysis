@@ -10,11 +10,11 @@ def main():
 
     import DataTools.Cursors
     from Loggers.FileLoggers import FileWritingLogger
-    from Controllers.ProcessingControllers import UserProcessingController, IProcessingController
+    from deprecated.ProcessingControllers import UserProcessingController, IProcessingController
     from Servers.ClientSide import ServerQueueDropin
-    from TextProcessors.Filters import URLFilter, UsernameFilter, PunctuationFilter, NumeralFilter, StopwordFilter
-    from TextProcessors.Modifiers import WierdBPrefixConverter, CaseConverter
-    from TextProcessors.Processors import SingleWordProcessor
+    from TextTools.Filtration.Filters import URLFilter, UsernameFilter, PunctuationFilter, NumeralFilter, StopwordFilter
+    from TextTools.Replacement.Modifiers import WierdBPrefixConverter, CaseConverter
+    from TextTools.Processors.SingleWordProcessors import SingleWordProcessor
 
     # How many users to process
     LIMIT_USERS = 500

@@ -48,3 +48,21 @@ ON (ww.id = r.rwid);
 
 
 
+-- adapting for sqlite Get the actual word string for immediately preceeding words
+SELECT ww.word
+FROM words ww
+JOIN (
+
+  SELECT a.word AS rwid
+	FROM word_map_deux a
+	JOIN (
+	  SELECT m.user_id AS uid, m.word_index - 1 AS wix
+	  FROM word_map_deux m
+	  ) AS b
+	ON (a.user_id = b.uid)
+	WHERE a.word_index = b.wix
+) AS r
+ON (ww.id = r.rwid);
+
+
+

@@ -6,8 +6,27 @@ __author__ = 'adam'
 import os
 import sys
 
+############################## Global control variables ###############
 # Whether this is a test
 TEST = True
+
+ITEM_TYPE = 'user'
+# ITEM_TYPE = 'tweet'
+
+# How many users or tweets to process
+# LIMIT = None
+LIMIT = 1000
+
+
+############ Whether to log
+# Log the id of each user or tweet as they pass through each
+# stage of processing. This is used for ensuring accuracy.
+INTEGRITY_LOGGING = False
+# Record a timestamp for various stages for use in tuning
+TIME_LOGGING = False
+# Whether to send result to Slack webhook
+SLACK_NOTIFY = False
+
 
 ############## Locations of code
 ROOT = os.getenv( "HOME" )
@@ -49,10 +68,18 @@ CLIENT_QUEUE_SIZE = 700
 
 ####################### DB files ##################################
 # sqlite db files
+# working folders
 DB_FOLDER = "%s/Desktop/TwitterDataAnalysisLogs/dbs" % ROOT
 SQLITE_FILE = '%s/wordmapping.db' % LOG_FOLDER_PATH
 SQLITE_FILE_CONNECTION_STRING = 'sqlite:////%s' % SQLITE_FILE
-MASTER_DB = '%s/master.db' % LOG_FOLDER_PATH  # the file things get compiled into
+# the working file things get compiled into
+MASTER_DB = '%s/master.db' % LOG_FOLDER_PATH
+
+# Processed data files
+DATA_FOLDER = "%s/private_data" % BASE
+USER_DB_MASTER = '%s/user-databases/users-master.db' % DATA_FOLDER
+USER_DB_NO_STOP = '%s/user-databases/users-no-stop.db' % DATA_FOLDER
+
 MAX_DB_FILES = 10  # the maximum number of db files to create.
 
 
@@ -79,10 +106,9 @@ ENGINE = 'sqlite-file'
 
 # The name of the database to connect to
 if TEST:
-    DB = 'twitter_wordsTEST'
+    DB = 'twitter_wordsTEST' if ITEM_TYPE == 'user' else 'twitter_dataTEST'
 else:
-    DB = 'twitter_users'
-# DB = 'twitter_data'
+    DB = 'twitter_users' if ITEM_TYPE == 'user' else 'twitter_data'
 
 
 # Sometimes things go wrong in develoment and
@@ -92,14 +118,6 @@ PLEASE_ROLLBACK = False
 PRINT_STEPS = False
 
 ####################### Logging #################################
-############ Whether to log
-# Log the id of each user or tweet as they pass through each
-# stage of processing. This is used for ensuring accuracy.
-INTEGRITY_LOGGING = False
-# Record a timestamp for various stages for use in tuning
-TIME_LOGGING = False
-# Whether to send result to Slack webhook
-SLACK_NOTIFY = True
 
 ############ Files
 ######## User flow logging (tracking progress of user)
@@ -122,4 +140,4 @@ QUERY_TIME_LOG = '%s/QUERY_TIME_LOG.csv' % LOG_FOLDER_PATH
 ########## Permanent logs
 # semi-permanent log of how long it takes to run user processing
 # this gets written to regardless of whether TIME_LOGGING is True
-RUN_TIME_LOG = '%s/user-processing-run-time-log.csv' % LOG_FOLDER_PATH
+RUN_TIME_LOG = '%s/%s-processing-run-time-log.csv' % (LOG_FOLDER_PATH, ITEM_TYPE)

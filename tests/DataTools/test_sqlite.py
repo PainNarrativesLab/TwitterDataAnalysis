@@ -6,7 +6,7 @@ fake = Faker()
 
 import sqlalchemy
 
-from DataTools.WordORM import create_db_tables
+from Models.WordORM import create_db_tables
 from DataConnections import _create_sqlite_file_engine, _create_sqlite_engine
 
 

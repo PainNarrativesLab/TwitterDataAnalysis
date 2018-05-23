@@ -8,7 +8,7 @@ import asyncio
 
 from ProcessingTools.Queues import AsyncQueues
 from Servers.Mixins import ResponseStoreMixin
-from ProcessingTools.Processors.AsyncProcessing import Processor
+from ProcessingTools.Processors.UserProcessing import Processor
 
 
 class Control( ResponseStoreMixin ):
@@ -33,13 +33,13 @@ class Control( ResponseStoreMixin ):
 
         return False
 
-    async def _process( self, user, future ):
-        """Calls the processor on the user and
+    async def _process( self, item, future ):
+        """Calls the processor on the item and
         returns a list of results from the object.
         """
         # Process the item and return
         # a list of result objects
-        resultsList = self.processor.process( user )
+        resultsList = self.processor.process( item )
         # create a future which will control when we
         # go on to the next item from the cursor
         # Now we push it into the queue along with a future,
@@ -64,83 +64,21 @@ class Control( ResponseStoreMixin ):
                     overall_future.set_result( True )
                     return overall_future
 
-                # we're good to go. Processing user
+                # we're good to go. Processing item
                 future = asyncio.Future()
-                user = self.cursor.next()
+                # get a user or tweet item
+                item = self.cursor.next()
                 self.count_of_processed += 1
-                await self._process( user, future )
+                await self._process( item, future )
 
             except StopIteration as e:
-                print( "%s users processed" % self.count_of_processed )
+                print( "%s item processed" % self.count_of_processed )
                 # Some items may still be in the queue, thus
                 # we need to send them all to the server
                 # before we exit
                 future = asyncio.Future()
                 await self.queueHandler.flush_queue(future)
                 return overall_future.set_result( True )
-
-    # async def process_next( self, *args, **kwargs ):
-    #     """Runs the processing on the next item in the cursor
-    #     This runs synchronously.
-    #     """
-    #     print('process next called')
-    #
-    #     try:
-    #         # while True:
-    #         # if self.is_over_limit:
-    #         #     self.overall_future.set_result(True)
-    #         #     return self.overall_future
-    #         #
-    #         # future = asyncio.Future()
-    #         #
-    #         # user = self.cursor.next()
-    #         # self.count_of_processed += 1
-    #         # # First process the item into a list of results objects
-    #         resultsList = self.processor.process( user )
-    #         # create a future which will control when we
-    #         # go on to the next item from the cursor
-    #         future.add_done_callback( self.process_next() )
-    #         # Process the next item in the queue and return
-    #         # a list of result objects
-    #         # Now we push it into the queue along with a future,
-    #         # when the future
-    #         # r = await j( self.queueHandler, resultsList, future )
-    #         await self.queueHandler.enque( resultsList, future )
-    #         return future
-    #     except StopIteration as e:
-    #         print( "%s users processed (not nec done)" % self.count_of_processed )
-    #         return future.set_result(True)
-
-    # loop = asyncio.get_event_loop()
-    #
-    # loop = asyncio.get_event_loop()
-    # self.overall_future = asyncio.Future()
-    # asyncio.ensure_future(self.process_next(future))
-    # future.add_done_callback(got_result)
-    # try:
-    #     loop.run_forever()
-    # finally:
-    #     loop.close()
-
-    # while True:
-    #     try:
-    #         await self.process_next()
-    #         # loop.close()
-    #         # create a future which will control when we
-    #         # go on to the next item from the cursor
-    #         # future = asyncio.Future()
-    #         # future.add_done_callback( self.process_next  )
-    #         # # Process the next item in the queue and return
-    #         # # a list of result objects
-    #         # resultsList = self.process_next()
-    #         # # Now we push it into the queue along with a future,
-    #         # # when the future
-    #         # self.queueHandler.enque( resultsList, future )
-    #
-    #     except StopIteration as e:
-    #         print( "%s users processed (not nec done)" % self.count_of_processed )
-    #
-    #         return self.count_of_processed
 
 
 if __name__ == '__main__':

@@ -3,7 +3,7 @@ This contains classes for loading tweet data
 
 In the process of being converted to use sqlalchemy
 """
-
+import environment
 from sqlalchemy import Table, Column, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -42,6 +42,9 @@ class Tweets(Base):
     is_translation_enabled = Column(String(100))
     profile_location = Column(String(100))
 
+    def item_type( self ):
+        return 'tweet'
+
 
 class Users(Base):
     __tablename__ = 'users'
@@ -65,6 +68,9 @@ class Users(Base):
     id = Column(String(225))
     location = Column(String(225))
     is_translation_enabled = Column(String(10))
+
+    def item_type( self ):
+        return 'user'
 
 
 class Tweet(Tweets):

@@ -8,7 +8,7 @@ __author__ = 'adam'
 # import QueueTools
 import DataTools.DataRepositories
 
-import ProcessingTools.Workers as Workers
+import deprecated.Workers as Workers
 import Loggers.FileLoggers as Loggers
 from environment import *
 
@@ -23,7 +23,7 @@ class SaveListener(IListener):
     """
     def __init__(self):
         # Initializes the repository at the class level
-        Workers.SaveWorker.initialize_repository(DataTools.DataRepositories.WordRepository())
+        Workers.SaveWorker.initialize_repository( DataTools.DataRepositories.WordRepository() )
 
     def handle(self, queue):
         if PRINT_STEPS is True: print("SaveListener.handle called")
@@ -32,7 +32,7 @@ class SaveListener(IListener):
         # pull a result off the queue
         result = queue.next()
         # save it
-        Workers.SaveWorker.run(result)
+        Workers.SaveWorker.run( result )
 
 
 class LogListener(IListener):
@@ -50,4 +50,4 @@ class LogListener(IListener):
         result = handler.next()
 
         # save it
-        Workers.LogWorker.run(result)
+        Workers.LogWorker.run( result )

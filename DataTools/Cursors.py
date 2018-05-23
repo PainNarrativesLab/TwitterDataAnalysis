@@ -6,7 +6,7 @@ __author__ = 'adam'
 import threading
 
 # Load cursor for tweet ids
-import DataTools.TweetORM
+import Models.TweetORM
 from DataTools import DataConnections
 from environment import *
 
@@ -94,7 +94,7 @@ class TweetCursor(Cursor):
         """Gets tweets and creates an iterator which is accessed via next_tweet"""
         if PRINT_STEPS is True: print("_create_tweet_iterator")
 
-        q = self.dao.session.query(DataTools.TweetORM.Tweet)
+        q = self.dao.session.query( Models.TweetORM.Tweet )
 
         if self.limit is not None:
             q = q.limit(self.limit)
@@ -144,30 +144,16 @@ class UserCursor(Cursor):
         """Gets users and creates an iterator which is accessed via next_tweet"""
         if PRINT_STEPS is True: print("_create_user_iterator")
 
-        q = self.dao.session.query(DataTools.TweetORM.Users)
+        q = self.dao.session.query( Models.TweetORM.Users )
 
         if self.limit is not None:
             q.limit(self.limit)
 
         if self.language is not None:
-            q = q.filter(DataTools.TweetORM.Users.lang == self.language)
+            q = q.filter( Models.TweetORM.Users.lang == self.language )
 
         for t in q.all():
             yield t
-
-            #
-            # for t in self.dao.session.query(DataTools.TweetORM.Users).limit(self.limit).all():
-            # for t in q.filter(DataTools.TweetORM.Users.lang == self.language) \
-            #         .all():
-            #
-            # for t in self.dao.session\
-            #         .query(DataTools.TweetORM.Users)\
-            #         .filter(DataTools.TweetORM.Users.lang == self.language)\
-            #         .all():
-            #     yield t
-        # else:
-        # for t in self.dao.session.query(DataTools.TweetORM.Users).all():
-        #     yield t
 
     def next_user(self):
         """Returns the next user object from the db"""
@@ -184,8 +170,45 @@ class WindowedUserCursor( Cursor ):
         self.callCount = 0
         self.firstId = 0
         self.limit = 4
-        self.pk_attr = DataTools.TweetORM.Users.userID
-        self.model = DataTools.TweetORM.Users
+        self.pk_attr = Models.TweetORM.Users.userID
+        self.model = Models.TweetORM.Users
+        # potentially override the above defaults
+        self._process_kwargs( kwargs )
+        self.create_dao()
+
+        self.qry = self.dao.session.query( self.model )
+
+        # Create the iterator object
+        self.my_iter = self._create_iterator()
+
+    def next( self ):
+        self.callCount += 1
+        return next( self.my_iter )
+
+    def _create_iterator( self ):
+
+        while True:
+            q = self.qry
+            if self.firstId is not None:
+                # get records with ids higher than our highest current
+                q = self.qry.filter( self.pk_attr > self.firstId )
+            rec = None
+            for rec in q.order_by( self.pk_attr ).limit( self.limit ):
+                yield rec
+            if rec is None:
+                break
+            self.firstId = self.pk_attr.__get__( rec, self.pk_attr ) if rec else None
+
+
+class WindowedTweetCursor( Cursor ):
+    def __init__( self, **kwargs ):
+        super().__init__()
+        # For auditing purposes
+        self.callCount = 0
+        self.firstId = 0
+        self.limit = 4
+        self.pk_attr = Models.TweetORM.Tweets.tweetID
+        self.model = Models.TweetORM.Tweets
         # potentially override the above defaults
         self._process_kwargs( kwargs )
         self.create_dao()

@@ -13,12 +13,12 @@ sys.path.append( '%s/TextTools/TextProcessors' % environment.BASE )  # the direc
 from TestingTools.DataAndFunctionsForTesting import *
 from TestingTools.Factories import *
 
-from ProcessingTools.Processors.AsyncProcessing import Processor
+from ProcessingTools.Processors.UserProcessing import Processor
 
 # from Servers.ClientSide import ServerQueueDropin
-from TextProcessors.Filters import URLFilter, UsernameFilter, PunctuationFilter, NumeralFilter, StopwordFilter
-from TextProcessors.Modifiers import WierdBPrefixConverter, CaseConverter
-from TextProcessors.Processors import SingleWordProcessor
+from TextTools.Filtration.Filters import URLFilter, UsernameFilter, PunctuationFilter, NumeralFilter, StopwordFilter
+from TextTools.Replacement.Modifiers import WierdBPrefixConverter, CaseConverter
+from TextTools.Processors.SingleWordProcessors import SingleWordProcessor
 
 
 class AsyncProcessorUnitTests( unittest.TestCase ):

@@ -11,14 +11,11 @@ import tornado.web
 import tornado.httpserver
 
 import tornado.log
-import DataTools.DataRepositories
-import ProcessingTools.Workers as Workers
 import Helpers
 
 import time
 # from Loggers.FileLoggers import FileWritingLogger
 from Loggers.CsvLoggers import log_query, log_query_timestamp
-from DataConnections import session_scope, make_scoped_session_factory,initialize_engine
 import environment
 
 from NonOrmModels import WordMapDeuxDAO

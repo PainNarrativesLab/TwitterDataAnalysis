@@ -1,6 +1,3 @@
-import nltk
-from nltk.tokenize import word_tokenize, sent_tokenize
-
 # Used for WordFilters
 from ConstantsAndUtilities import *
 import string

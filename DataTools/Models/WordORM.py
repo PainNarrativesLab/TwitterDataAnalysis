@@ -5,6 +5,8 @@ Created by adam on 11/4/16
 """
 __author__ = 'adam'
 
+import environment
+
 import datetime
 
 from sqlalchemy import *

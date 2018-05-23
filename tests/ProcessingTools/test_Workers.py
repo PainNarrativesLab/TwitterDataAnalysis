@@ -1,9 +1,8 @@
 import unittest
 
 import Queues.Interfaces
-from ProcessingTools.Workers import *
-from Queues import QueueTools
-from DataTools import TweetORM
+from deprecated.Workers import *
+from Models import TweetORM
 from DataTools import Cursors
 from threading import Thread
 
@@ -20,20 +19,20 @@ class StringProcessingWorkerTest(unittest.TestCase):
         obj = StringProcessingWorker()
         # check whether has expected properties
         self.assertEqual(obj.cursor, 'cursor', 'cursor available to child')
-        self.assertTrue(type(obj.processor) == ProcessingControllers.TweetProcessingController,
-                        'processor available to child')
+        self.assertTrue( type(obj.processor) == ProcessingControllers.TweetProcessingController,
+                        'processor available to child' )
     @unittest.skip
     def test_cursor_behaves_as_expected(self):
         cursor = Cursors.TweetCursor()
         queue = Queues.Interfaces.IQueueHandler()
         self.obj.initialize(cursor, queue, 'processor')
         r1 = self.obj.cursor.next_tweet()
-        self.assertIsInstance(r1, TweetORM.Tweet)
+        self.assertIsInstance( r1, TweetORM.Tweet )
 
         # create a new instance
         obj = StringProcessingWorker()
         r2 = obj.cursor.next_tweet()
-        self.assertIsInstance(r2, TweetORM.Tweet)
+        self.assertIsInstance( r2, TweetORM.Tweet )
         self.assertNotEqual(r1, r2, 'calls to different instances return different results. The generator is advancing')
 
     @unittest.skip
@@ -72,8 +71,8 @@ class StringProcessingWorkerTest(unittest.TestCase):
 
         self.assertTrue(len(r1) > 1)
         self.assertTrue(len(r2) > 1)
-        [self.assertIsInstance(r, TweetORM.Tweet) for r in r1]
-        [self.assertIsInstance(r, TweetORM.Tweet) for r in r2]
+        [ self.assertIsInstance( r, TweetORM.Tweet ) for r in r1 ]
+        [ self.assertIsInstance( r, TweetORM.Tweet ) for r in r2 ]
         # self.assertNotEqual( r1, r2, 'calls to different instances return different results. The generator is advancing' )
 
 

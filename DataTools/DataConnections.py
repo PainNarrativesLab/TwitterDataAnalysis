@@ -12,7 +12,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 import environment
-from DataTools.WordORM import create_db_tables
+from Models.WordORM import create_db_tables
 from environment import *
 
 # Base class that maintains the catalog of tables and classes in db

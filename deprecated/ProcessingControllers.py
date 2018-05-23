@@ -10,11 +10,13 @@ taking a stored tweet or user object and storing its constituent words
 
 Created by adam on 11/6/16
 """
+import TextTools.Processors.Parents
+
 __author__ = 'adam'
 
 from tornado import gen
 
-import DataTools.TweetORM
+import Models.TweetORM
 import environment
 from DataTools.DataStructures import make_tweet_result, make_user_result
 from Queues.Interfaces import IQueueHandler
@@ -22,6 +24,8 @@ from Servers.Mixins import ResponseStoreMixin
 from TextProcessors import Tokenizers, Processors
 # instrumenting to determine if running async
 from profiling.OptimizingTools import timestamp_writer
+
+import Utilities
 
 log_file = "%s/processing-enque.csv" % environment.PROFILING_LOG_FOLDER_PATH
 
@@ -35,6 +39,7 @@ def response_complete( responses, response ):
 
 class IProcessingController( ResponseStoreMixin ):
 
+    @Utilities.deprecated
     def __init__( self, saveQueueHandler: IQueueHandler ):
         """
         :type saveQueueHandler: Service class which puts the word in the queue to be saved, so that's not a bottleneck
@@ -46,11 +51,11 @@ class IProcessingController( ResponseStoreMixin ):
         self.word_tokenizer = Tokenizers.WordTokenizer()
         super().__init__()
 
-    def load_word_processor( self, processor: Processors.IProcessor ):
+    def load_word_processor( self, processor: TextTools.Processors.Parents.IProcessor ):
         """
         Add something which acts on individual words
          to the stack that will run on each word from the tweet
-         :type processor: Processors.IProcessor
+         :type processor: TextTools.Processors.Parents.IProcessor
          """
         self._word_processors.append( processor )
         self._word_processors = list( set( self._word_processors ) )
@@ -114,7 +119,7 @@ class IProcessingController( ResponseStoreMixin ):
 
 class TweetProcessingController( IProcessingController ):
     """Handles processing of one tweet object at a time."""
-
+    @Utilities.deprecated
     def __init__( self, saveQueueHandler: IQueueHandler ):
         """
         :type saveQueueHandler: Service class which puts the word in the queue to be saved, so that's not a bottleneck
@@ -129,11 +134,11 @@ class TweetProcessingController( IProcessingController ):
         """Runs the string processing on a single tweet or list of tweets and enques the result for saving"""
 
         # wrap a single object in a list
-        tweets = [ tweets ] if isinstance( tweets, DataTools.TweetORM.Tweet ) else tweets
+        tweets = [ tweets ] if isinstance( tweets, Models.TweetORM.Tweet ) else tweets
 
         for tweet in tweets:
             # This way we can use either a list of strings or tweet objects
-            if isinstance( tweet, DataTools.TweetORM.Tweet ) or isinstance( tweet, DataTools.TweetORM.Tweets ):
+            if isinstance( tweet, Models.TweetORM.Tweet ) or isinstance( tweet, Models.TweetORM.Tweets ):
                 text = str( tweet.tweetText )
                 tweetId = tweet.tweetID
             else:
@@ -156,7 +161,7 @@ class UserProcessingController( IProcessingController ):
     """Handles processing of one user at a time.
     DEPRECATED
     """
-
+    @Utilities.deprecated
     def __init__( self, saveQueueHandler: IQueueHandler ):
         """
         :type saveQueueHandler: Service class which puts the word in the queue to be saved, so that's not a bottleneck
@@ -173,9 +178,9 @@ class UserProcessingController( IProcessingController ):
         :param users: list of DataTools.TweetORM.Users or single User
         """
         # wrap a single object in a list
-        users = [ users ] if isinstance( users, DataTools.TweetORM.Users ) else users
+        users = [ users ] if isinstance( users, Models.TweetORM.Users ) else users
         for user in users:
-            if isinstance( user, DataTools.TweetORM.Users ):
+            if isinstance( user, Models.TweetORM.Users ):
                 text = str( user.description )
                 userId = user.userID
             else:

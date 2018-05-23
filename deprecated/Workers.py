@@ -4,7 +4,7 @@ Created by adam on 11/23/16
 __author__ = 'adam'
 
 from environment import *
-import Controllers.ProcessingControllers as ProcessingControllers
+import deprecated.ProcessingControllers as ProcessingControllers
 
 
 class IWorker(object):

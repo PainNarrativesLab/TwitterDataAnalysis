@@ -1,6 +1,6 @@
 import unittest
 
-from Controllers.ProcessingControllers import *
+from deprecated.ProcessingControllers import *
 from TestingTools.DataAndFunctionsForTesting import *
 from TestingTools.Factories import DummyQueueFactory, UserFactory
 

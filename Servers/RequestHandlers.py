@@ -75,7 +75,7 @@ class QHelper( object ):
                 with conn:
                     rs = [ self.store.pop() for i in range( 0, len( self.store ) ) ]
 
-                    userQuery = """INSERT INTO word_map_deux (word, sentence_index, word_index, user_id) 
+                    userQuery = """INSERT INTO word_map (word, sentence_index, word_index, user_id) 
                         VALUES (?, ?, ?, ?)"""
                     conn.executemany( userQuery, rs )
 

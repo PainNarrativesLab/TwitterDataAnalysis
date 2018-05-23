@@ -4,6 +4,7 @@ so that we may benchmark their performance
 
 Created by adam on 12/15/16
 """
+import TextTools.Processors.SingleWordProcessors
 
 __author__ = 'adam'
 # %cd /Users/adam/Dropbox/PainNarrativesLab/TwitterDataAnalysis
@@ -21,16 +22,14 @@ from OptimizationTools import *
 
 # Initialize the tools for filtering and modifying the individual tweet words
 import TextProcessors.Processors
-from TextProcessors.Modifiers import *
-import TextProcessors.Filters as Filters
-from ProcessingTools import Listeners
-from ProcessingTools import Workers
+from TextTools.Replacement.Modifiers import *
+import TextTools.Filtration.Filters as Filters
+from deprecated import Listeners, Workers
 import Queues.QueueTools as QT
 
 import DataTools.Cursors
 import ConstantsAndUtilities
-from DataTools import WordORM
-
+from Models import WordORM
 
 # Pandas
 import pandas as pd
@@ -66,7 +65,7 @@ def run_tweet_processing_benchmarking_test(results_file, RUNS, MAX_THREADS, STAR
     """
 
     # Initialize the tools for filtering and modifying the individual tweet words
-    word_processor = TextProcessors.Processors.SingleWordProcessor()
+    word_processor = TextTools.Processors.SingleWordProcessors.SingleWordProcessor()
     ignore = ConstantsAndUtilities.Ignore()
     ignore._construct()
     merge = ConstantsAndUtilities.Merge()
@@ -81,10 +80,10 @@ def run_tweet_processing_benchmarking_test(results_file, RUNS, MAX_THREADS, STAR
     ignoreDawgFilter.add_to_ignorelist(ignore.get_list())
     ignoreDawgFilter.add_to_ignorelist(nltk.corpus.stopwords.words('english'))  # or do we keep them?
 
-    word_processor.add_filters(Filters.UsernameFilter())
-    word_processor.add_filters(Filters.PunctuationFilter())
-    word_processor.add_filters(Filters.URLFilter())
-    word_processor.add_filters(Filters.NumeralFilter())
+    word_processor.add_filters( Filters.UsernameFilter() )
+    word_processor.add_filters( Filters.PunctuationFilter() )
+    word_processor.add_filters( Filters.URLFilter() )
+    word_processor.add_filters( Filters.NumeralFilter() )
     word_processor.add_modifiers(TextProcessors.Modifiers.WierdBPrefixConverter())
     # processor.add_modifiers( TextProcessors.Modifiers.UnicodeConverter() )
     word_processor.add_modifiers(TextProcessors.Modifiers.CaseConverter())
@@ -100,7 +99,7 @@ def run_tweet_processing_benchmarking_test(results_file, RUNS, MAX_THREADS, STAR
 
                 # Create queue and listeners for processed tokens
                 Queue = QT.SaveQueueHandler()
-                Queue.register_listener(Listeners.SaveListener())
+                Queue.register_listener( Listeners.SaveListener() )
 
                 # Load cursor for tweet ids
                 cursor = DataTools.Cursors.TweetCursor()

@@ -6,7 +6,7 @@ __author__ = 'adam'
 import environment
 from DataTools.DataStructures import *
 from DataTools.Errors import DataError
-from DataTools.WordORM import *
+from Models.WordORM import *
 
 class IRepository( object ):
     def save( self, listOfResults ):

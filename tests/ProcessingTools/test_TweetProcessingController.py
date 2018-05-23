@@ -4,7 +4,7 @@ from ConstantsAndUtilities import *
 
 sys.path.append('%s/TextTools/TextProcessors' % BASE)  # the directory that contains my_pkg
 
-from Controllers.ProcessingControllers import *
+from deprecated.ProcessingControllers import *
 
 from TestingTools.DataAndFunctionsForTesting import *
 from TestingTools.Factories import *

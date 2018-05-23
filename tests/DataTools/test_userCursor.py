@@ -6,7 +6,7 @@ import unittest
 from unittest import TestCase
 
 from DataTools.Cursors import UserCursor
-from DataTools.TweetORM import Users
+from Models.TweetORM import Users
 
 __author__ = 'adam'
 

@@ -1,7 +1,8 @@
 """
 Created by adam on 11/6/16
 """
-from DataTools import TweetORM
+import TextTools.Processors.SingleWordProcessors
+from Models import TweetORM
 
 __author__ = 'adam'
 import random
@@ -13,7 +14,6 @@ import ConstantsAndUtilities
 import TextProcessors
 from DataTools.DataStructures import *
 from TextProcessors import Processors
-from environment import *
 
 fake = Faker()
 
@@ -71,12 +71,12 @@ def functionalTestOfProcessor( numWords=4, numSent=4, numTweets=4 ):
 def initialize_processor( ):
     # Holds words to ignore etc
 
-    ignore = ConstantsAndUtilities.Ignore( )
+    ignore = ConstantsAndUtilities.Ignore()
     ignore._construct()
-    merge = ConstantsAndUtilities.Merge( )
+    merge = ConstantsAndUtilities.Merge()
 
     """Initialize the tools for filtering and modifying the individual tweet words"""
-    processor = TextProcessors.Processors.SingleWordProcessor( )
+    processor = TextTools.Processors.SingleWordProcessors.SingleWordProcessor()
 
     ignoreListFilter = TextProcessors.Filters.IgnoreListFilter( )
     ignoreListFilter.add_to_ignorelist( ignore.get_list( ) )

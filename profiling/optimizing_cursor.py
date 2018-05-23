@@ -1,6 +1,8 @@
 """
 Created by adam on 12/15/16
 """
+import TextTools.Processors.SingleWordProcessors
+
 __author__ = 'adam'
 
 from threading import Thread
@@ -10,10 +12,9 @@ import ConstantsAndUtilities
 
 # Initialize the tools for filtering and modifying the individual tweet words
 import TextProcessors.Processors
-from TextProcessors.Modifiers import *
+from TextTools.Replacement.Modifiers import *
 
-from ProcessingTools import Listeners
-from ProcessingTools import Workers
+from deprecated import Listeners, Workers
 import Queues.QueueTools as QT
 
 import DataTools.Cursors
@@ -21,16 +22,16 @@ import DataTools.Cursors
 
 if __name__ == '__main__':
     Queue = QT.SaveQueueHandler( )
-    Queue.register_listener( Listeners.SaveListener( ) )
+    Queue.register_listener( Listeners.SaveListener() )
 
     # Load cursor for tweet ids
     threads = []
     cursor = DataTools.Cursors.TweetCursor( )
 
-    word_processor = TextProcessors.Processors.SingleWordProcessor( )
-    ignore = ConstantsAndUtilities.Ignore( )
+    word_processor = TextTools.Processors.SingleWordProcessors.SingleWordProcessor()
+    ignore = ConstantsAndUtilities.Ignore()
     ignore._construct( )
-    merge = ConstantsAndUtilities.Merge( )
+    merge = ConstantsAndUtilities.Merge()
 
     # reg filter
     ignoreListFilter = TextProcessors.Filters.IgnoreListFilter( )
@@ -47,7 +48,7 @@ if __name__ == '__main__':
 
 
     for _ in range(0, 10):
-        worker = Workers.TestingWorker( )
+        worker = Workers.TestingWorker()
         # load tweet and stuff into worker
         worker.initialize( cursor.next_tweet( ), Queue, word_processor )
         # give the worker its own thread

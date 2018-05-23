@@ -19,7 +19,7 @@ if __name__ == '__main__':
     import environment
     # /Users/adam/Dropbox/PainNarrativesLab/TwitterDataAnalysis/
     import Servers.ServerControlCommander as Commander
-    import Servers.DatabaseServerGrumble as DSG
+    import Servers.DatabaseServer as DSG
     from Executables import process_user_descriptions_into_words2 as Runner
 
     def run1():

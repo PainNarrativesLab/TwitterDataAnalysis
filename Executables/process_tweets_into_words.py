@@ -14,12 +14,10 @@ from Loggers.Helpers import delete_files
 
 async def run(future):
     import DataTools.Cursors
-    # from Controllers.ProcessingControllers import UserProcessingController, IProcessingController
     from ProcessingTools.Controllers.AsyncControl import Control
     from ProcessingTools.Processors.UserProcessing import Processor
     from ProcessingTools.Queues.AsyncQueues import AsyncServerQueueDropin
 
-    # from Servers.ClientSide import ServerQueueDropin
     from TextTools.Filtration.Filters import URLFilter, UsernameFilter, PunctuationFilter, NumeralFilter
     from TextTools.Replacement.Modifiers import WierdBPrefixConverter, CaseConverter
     from TextTools.Processors.SingleWordProcessors import SingleWordProcessor
@@ -29,11 +27,14 @@ async def run(future):
         PunctuationFilter(),
         URLFilter(),
         NumeralFilter(),
+        # Keeping stopword because may want thing like 'I'
         # StopwordFilter()
     ]
 
     modifiers = [
         WierdBPrefixConverter(),
+        # need to run in this order so that the new front
+        # of the word will be converted
         CaseConverter()
     ]
 
@@ -56,18 +57,18 @@ async def run(future):
     control = Control( queueHandler=queueHandler, processor=processor )
 
     # create user cursor
-    cursor = DataTools.Cursors.WindowedUserCursor( language='en' )
+    cursor = DataTools.Cursors.WindowedTweetCursor( language='en' )
 
     # Run it
     print('Starting processing ')
     await control.process_from_cursor(cursor, environment.LIMIT)
-    print('Processing complete. Processed %s users' % control.count_of_processed)
+    print('Processing complete. Processed %s tweets' % control.count_of_processed)
     await c.async_send_flush_command()
     # return the number processed as the value of the future
     future.set_result(control.count_of_processed)
 
 
-@log_start_stop( [ environment.RUN_TIME_LOG ], text='send queue batch_size=%s' % environment.CLIENT_QUEUE_SIZE )
+@log_start_stop( [ environment.RUN_TIME_LOG ], text='reenabled modifiers' )
 def main():
     print('Starting run')
     # create a clean db and instrumenation logs
