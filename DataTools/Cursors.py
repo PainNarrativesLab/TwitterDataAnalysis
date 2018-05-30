@@ -6,10 +6,9 @@ __author__ = 'adam'
 import threading
 
 # Load cursor for tweet ids
-import Models.TweetORM
+import TweetORM
 from DataTools import DataConnections
 from environment import *
-
 
 class threadsafe_iter:
     """Takes an iterator/generator and makes it thread-safe by
@@ -94,7 +93,7 @@ class TweetCursor(Cursor):
         """Gets tweets and creates an iterator which is accessed via next_tweet"""
         if PRINT_STEPS is True: print("_create_tweet_iterator")
 
-        q = self.dao.session.query( Models.TweetORM.Tweet )
+        q = self.dao.session.query( TweetORM.Tweet )
 
         if self.limit is not None:
             q = q.limit(self.limit)
@@ -144,13 +143,13 @@ class UserCursor(Cursor):
         """Gets users and creates an iterator which is accessed via next_tweet"""
         if PRINT_STEPS is True: print("_create_user_iterator")
 
-        q = self.dao.session.query( Models.TweetORM.Users )
+        q = self.dao.session.query( TweetORM.Users )
 
         if self.limit is not None:
             q.limit(self.limit)
 
         if self.language is not None:
-            q = q.filter( Models.TweetORM.Users.lang == self.language )
+            q = q.filter( TweetORM.Users.lang == self.language )
 
         for t in q.all():
             yield t
@@ -170,8 +169,8 @@ class WindowedUserCursor( Cursor ):
         self.callCount = 0
         self.firstId = 0
         self.limit = 4
-        self.pk_attr = Models.TweetORM.Users.userID
-        self.model = Models.TweetORM.Users
+        self.pk_attr = TweetORM.Users.userID
+        self.model = TweetORM.Users
         # potentially override the above defaults
         self._process_kwargs( kwargs )
         self.create_dao()
@@ -207,8 +206,8 @@ class WindowedTweetCursor( Cursor ):
         self.callCount = 0
         self.firstId = 0
         self.limit = 4
-        self.pk_attr = Models.TweetORM.Tweets.tweetID
-        self.model = Models.TweetORM.Tweets
+        self.pk_attr = TweetORM.Tweets.tweetID
+        self.model = TweetORM.Tweets
         # potentially override the above defaults
         self._process_kwargs( kwargs )
         self.create_dao()

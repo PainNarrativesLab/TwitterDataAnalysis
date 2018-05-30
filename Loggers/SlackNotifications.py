@@ -28,7 +28,15 @@ def send_slack_update( text ):
     payload = json.dumps( payload )
     r = requests.post( url, data=payload )
     if r.status_code == 200:
-        print( 'slack notified' )
+        print( 'slack notified: %s ' % text )
+
+
+def slack_heartbeat(count, limit=environment.SLACK_HEARTBEAT_LIMIT):
+    """Sends a periodic update to slack"""
+    mod = count % limit
+    if mod == 0:
+        txt = "%s tweets processed" % count
+        send_slack_update(txt)
 
 
 if __name__ == '__main__':

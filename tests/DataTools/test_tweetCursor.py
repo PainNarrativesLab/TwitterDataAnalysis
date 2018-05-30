@@ -3,7 +3,7 @@ Created by adam on 7/5/17
 """
 from unittest import TestCase
 from DataTools.Cursors import TweetCursor
-from Models.TweetORM import Tweet
+from TweetORM import Tweet
 __author__ = 'adam'
 
 if __name__ == '__main__':

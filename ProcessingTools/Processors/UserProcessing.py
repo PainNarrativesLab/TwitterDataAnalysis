@@ -7,7 +7,6 @@ import environment
 
 from DataTools.DataStructures import make_user_result
 from profiling.OptimizingTools import timestamped_count_writer
-from DataTools.Models import TweetORM
 # from DataTools.Models.TweetORM import Users
 from ProcessingTools.Processors import Parents
 

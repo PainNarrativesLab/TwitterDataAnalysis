@@ -15,10 +15,10 @@ from Loggers.Helpers import delete_files
 async def run(future):
     import DataTools.Cursors
     from ProcessingTools.Controllers.AsyncControl import Control
-    from ProcessingTools.Processors.UserProcessing import Processor
+    from ProcessingTools.Processors.TweetProcessing import Processor
     from ProcessingTools.Queues.AsyncQueues import AsyncServerQueueDropin
 
-    from TextTools.Filtration.Filters import URLFilter, UsernameFilter, PunctuationFilter, NumeralFilter
+    from TextTools.Filtration.Filters import URLFilter, UsernameFilter, PunctuationFilter, NumeralFilter, StopwordFilter
     from TextTools.Replacement.Modifiers import WierdBPrefixConverter, CaseConverter
     from TextTools.Processors.SingleWordProcessors import SingleWordProcessor
 
@@ -27,7 +27,6 @@ async def run(future):
         PunctuationFilter(),
         URLFilter(),
         NumeralFilter(),
-        # Keeping stopword because may want thing like 'I'
         # StopwordFilter()
     ]
 
@@ -68,7 +67,7 @@ async def run(future):
     future.set_result(control.count_of_processed)
 
 
-@log_start_stop( [ environment.RUN_TIME_LOG ], text='reenabled modifiers' )
+@log_start_stop( [ environment.RUN_TIME_LOG ], text='no stopwords'  )
 def main():
     print('Starting run')
     # create a clean db and instrumenation logs
@@ -84,9 +83,9 @@ def main():
     asyncio.ensure_future(run(future))
     loop.run_until_complete(future)
     loop.close()
+    print('done')
     return future.result()
 
 
 if __name__ == '__main__':
     main()
-    # sys.exit(0)

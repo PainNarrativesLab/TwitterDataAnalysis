@@ -6,25 +6,24 @@ __author__ = 'adam'
 import xml.etree.ElementTree as ET
 from contextlib import contextmanager
 
+import MySQLdb
 import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import sessionmaker
 
 import environment
-from Models.WordORM import create_db_tables
+from DataTools.WordORM import create_db_tables
 from environment import *
 
 # Base class that maintains the catalog of tables and classes in db
 Base = declarative_base()
 
-from sqlalchemy.orm import scoped_session
-from sqlalchemy.orm import sessionmaker
-
-import MySQLdb
 
 @contextmanager
-def session_scope(engine=None):
+def session_scope( engine=None ):
     """
     Provide a transactional scope around a series of operations.
 
@@ -42,7 +41,7 @@ def session_scope(engine=None):
             engine = initialize_engine( environment.ENGINE )
         # DataTools's handle to database at global level
         # SessionFactory = make_scoped_session_factory(engine)
-        SessionFactory = make_session_factory(engine)
+        SessionFactory = make_session_factory( engine )
 
         if environment.ENGINE == 'sqlite' or environment.ENGINE == 'sqlite-file':
             # We need to get the db into memory when start up
@@ -63,12 +62,12 @@ def session_scope(engine=None):
             session.close()
 
 
-def make_scoped_session_factory(engine):
-    session_factory = sessionmaker(bind=engine)
-    return scoped_session(session_factory)
+def make_scoped_session_factory( engine ):
+    session_factory = sessionmaker( bind=engine )
+    return scoped_session( session_factory )
 
 
-def make_session_factory(engine):
+def make_session_factory( engine ):
     return sessionmaker( bind=engine )
 
 
@@ -94,10 +93,23 @@ def _create_sqlite_engine( echo=False ):
     print( "creating connection: %s " % conn )
     return create_engine( conn, echo=False )
 
-file_path_generator = environment.sqlite_file_connection_string_generator()
+
+def sqlite_file_connection_string_generator( folder_path=environment.DB_FOLDER, max_files=environment.MAX_DB_FILES ):
+    cnt = 1
+    while True:
+        file = '%s/wordmapping%s.db' % (folder_path, cnt)
+        yield file
+        # yield 'sqlite:////%s' % file
+        if cnt < max_files:
+            cnt += 1
+        else:
+            cnt = 1
 
 
-def _create_sqlite_file_engine( conn=next(file_path_generator), echo=True ):
+file_path_generator = sqlite_file_connection_string_generator()
+
+
+def _create_sqlite_file_engine( conn=next( file_path_generator ), echo=True ):
     """Creates an sqlite db engine using the file defined in SQLITE_FILE"""
     print( "creating connection: %s " % conn )
     return create_engine( conn, echo=echo )
@@ -170,7 +182,7 @@ class Connection( object ):
         raise NotImplementedError
 
 
-class NonOrmMySqlConnection(Connection):
+class NonOrmMySqlConnection( Connection ):
 
     def __init__( self, credential_file ):
         self._driver = '+mysqlconnector'
@@ -181,7 +193,8 @@ class NonOrmMySqlConnection(Connection):
             server = "%s:%s" % (self._server, self._port)
         else:
             server = self._server
-        self.engine = MySQLdb.connect( server, self._username, self._password, self._db_name, cursorclass=MySQLdb.cursors.DictCursor )
+        self.engine = MySQLdb.connect( server, self._username, self._password, self._db_name,
+                                       cursorclass=MySQLdb.cursors.DictCursor )
 
 
 class MySqlConnection( Connection ):

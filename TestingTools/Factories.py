@@ -16,8 +16,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 import DataTools.DataStructures
-import Models.TweetORM
-import Models.WordORM
+import TweetORM
+import WordORM
 from deprecated.Listeners import IListener
 from Queues.Interfaces import IQueueHandler
 
@@ -34,7 +34,7 @@ def fake_text():
 
 class UserFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
-        model = Models.TweetORM.Users
+        model = TweetORM.Users
         sqlalchemy_session = session  # the SQLAlchemy session object
 
     userID = factory.Sequence(lambda n: n)
@@ -46,7 +46,7 @@ class UserFactory(factory.alchemy.SQLAlchemyModelFactory):
 
 class TweetFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
-        model = Models.TweetORM.Tweets
+        model = TweetORM.Tweets
         sqlalchemy_session = session  # the SQLAlchemy session object
 
     tweetID = factory.Sequence(lambda n: n)
@@ -57,7 +57,7 @@ class TweetFactory(factory.alchemy.SQLAlchemyModelFactory):
 
 class WordFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
-        model = Models.WordORM.Word
+        model = WordORM.Word
         sqlalchemy_session = session  # the SQLAlchemy session object
 
     id = factory.Sequence(lambda n: n)

@@ -118,7 +118,7 @@ def log_start_stop( log_files, text=None, notify_slack=environment.SLACK_NOTIFY 
                 write_start_stop( f, format_standard_timestamp(t1), format_standard_timestamp(t2), result, text )
             if notify_slack:
                 delta = t2 - t1
-                runtime = round(delta.total_seconds()/60)
+                runtime = round(delta.total_seconds()/60, 2)
                 msg = "Processing complete \n Runtime = %s minutes \n Records = %s \n %s" % (runtime, result, text)
                 Slack.send_slack_update(msg)
 

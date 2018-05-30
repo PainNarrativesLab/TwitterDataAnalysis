@@ -9,7 +9,6 @@ import sqlite3
 import environment
 from Loggers.Helpers import delete_files
 
-g = environment.sqlite_file_connection_string_generator()
 
 query = """CREATE TABLE `word_map` (
 `tweet_id` int(20) DEFAULT NULL,

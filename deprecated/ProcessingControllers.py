@@ -16,12 +16,12 @@ __author__ = 'adam'
 
 from tornado import gen
 
-import Models.TweetORM
+import TweetORM
 import environment
 from DataTools.DataStructures import make_tweet_result, make_user_result
 from Queues.Interfaces import IQueueHandler
 from Servers.Mixins import ResponseStoreMixin
-from TextProcessors import Tokenizers, Processors
+from TextProcessors import Tokenizers
 # instrumenting to determine if running async
 from profiling.OptimizingTools import timestamp_writer
 
@@ -134,11 +134,11 @@ class TweetProcessingController( IProcessingController ):
         """Runs the string processing on a single tweet or list of tweets and enques the result for saving"""
 
         # wrap a single object in a list
-        tweets = [ tweets ] if isinstance( tweets, Models.TweetORM.Tweet ) else tweets
+        tweets = [ tweets ] if isinstance( tweets, TweetORM.Tweet ) else tweets
 
         for tweet in tweets:
             # This way we can use either a list of strings or tweet objects
-            if isinstance( tweet, Models.TweetORM.Tweet ) or isinstance( tweet, Models.TweetORM.Tweets ):
+            if isinstance( tweet, TweetORM.Tweet ) or isinstance( tweet, TweetORM.Tweets ):
                 text = str( tweet.tweetText )
                 tweetId = tweet.tweetID
             else:
@@ -178,9 +178,9 @@ class UserProcessingController( IProcessingController ):
         :param users: list of DataTools.TweetORM.Users or single User
         """
         # wrap a single object in a list
-        users = [ users ] if isinstance( users, Models.TweetORM.Users ) else users
+        users = [ users ] if isinstance( users, TweetORM.Users ) else users
         for user in users:
-            if isinstance( user, Models.TweetORM.Users ):
+            if isinstance( user, TweetORM.Users ):
                 text = str( user.description )
                 userId = user.userID
             else:

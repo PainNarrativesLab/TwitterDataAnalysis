@@ -2,7 +2,7 @@ import unittest
 
 import Queues.Interfaces
 from deprecated.Workers import *
-from Models import TweetORM
+import TweetORM
 from DataTools import Cursors
 from threading import Thread
 

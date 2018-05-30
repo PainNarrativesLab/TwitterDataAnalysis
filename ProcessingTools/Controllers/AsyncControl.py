@@ -3,12 +3,14 @@ Created by adam on 5/4/18
 """
 
 __author__ = 'adam'
-
+import environment
 import asyncio
 
 from ProcessingTools.Queues import AsyncQueues
 from Servers.Mixins import ResponseStoreMixin
 from ProcessingTools.Processors.UserProcessing import Processor
+
+from Loggers.SlackNotifications import slack_heartbeat
 
 
 class Control( ResponseStoreMixin ):
@@ -28,6 +30,8 @@ class Control( ResponseStoreMixin ):
         this won't get raised by the cursor
         given that we are stopping due to a user imposed limit
         """
+        if environment.SLACK_NOTIFY:
+            slack_heartbeat(self.count_of_processed)
         if self.limit is not None and self.count_of_processed >= self.limit:
             raise StopIteration
 

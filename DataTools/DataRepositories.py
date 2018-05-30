@@ -3,10 +3,9 @@ Created by adam on 11/6/16
 """
 __author__ = 'adam'
 
-import environment
 from DataTools.DataStructures import *
 from DataTools.Errors import DataError
-from Models.WordORM import *
+from DataTools.WordORM import *
 
 class IRepository( object ):
     def save( self, listOfResults ):

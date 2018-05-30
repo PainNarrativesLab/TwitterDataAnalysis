@@ -2,7 +2,7 @@
 Created by adam on 11/6/16
 """
 import TextTools.Processors.SingleWordProcessors
-from Models import TweetORM
+import TweetORM
 
 __author__ = 'adam'
 import random
@@ -13,7 +13,6 @@ from faker import Faker
 import ConstantsAndUtilities
 import TextProcessors
 from DataTools.DataStructures import *
-from TextProcessors import Processors
 
 fake = Faker()
 

@@ -5,8 +5,7 @@ __author__ = 'adam'
 
 import pandas as pd
 
-from Models import TweetORM
-from environment import *
+import TweetORM
 
 pd.options.display.max_rows = 999  # let pandas dataframe listings go long
 

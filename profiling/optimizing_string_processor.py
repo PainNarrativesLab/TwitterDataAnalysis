@@ -29,7 +29,7 @@ import Queues.QueueTools as QT
 
 import DataTools.Cursors
 import ConstantsAndUtilities
-from Models import WordORM
+import WordORM
 
 # Pandas
 import pandas as pd

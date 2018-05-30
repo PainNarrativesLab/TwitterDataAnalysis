@@ -1,6 +1,6 @@
 import unittest
 
-from ProcessingTools.SearchTools import *
+from SearchTools.SearchTools import *
 
 class FunctionTests( unittest.TestCase ):
 

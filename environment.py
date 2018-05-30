@@ -9,13 +9,14 @@ import sys
 ############################## Global control variables ###############
 # Whether this is a test
 TEST = True
+# TEST = False
 
-ITEM_TYPE = 'user'
-# ITEM_TYPE = 'tweet'
+# ITEM_TYPE = 'user'
+ITEM_TYPE = 'tweet'
 
 # How many users or tweets to process
-# LIMIT = None
-LIMIT = 1000
+LIMIT = None
+LIMIT = 10000
 
 
 ############ Whether to log
@@ -25,21 +26,26 @@ INTEGRITY_LOGGING = False
 # Record a timestamp for various stages for use in tuning
 TIME_LOGGING = False
 # Whether to send result to Slack webhook
-SLACK_NOTIFY = False
-
+SLACK_NOTIFY = True
+# at what point to send an update to slack
+SLACK_HEARTBEAT_LIMIT = 1000000
 
 ############## Locations of code
 ROOT = os.getenv( "HOME" )
 BASE = '%s/Dropbox/PainNarrativesLab' % ROOT
-DATAFOLDER = BASE + '/Data'
-MAPPING_PATH = "%s/TwitterDataAnalysis/mappings" % BASE
-CREDENTIAL_FILE = '%s/private_credentials/sql_local_credentials.xml' % BASE
-SLACK_CREDENTIAL_FILE = "%s/private_credentials/slack-credentials.xml" % BASE
-PROJ_BASE = "%s/TwitterDataAnalysis" % ROOT
 
 # Project folder paths
+PROJ_BASE = "%s/TwitterDataAnalysis" % ROOT
 TEXT_TOOLS_PATH = "%s/TextTools/" % BASE
 TWITTER_MINING_PATH = "%s/TwitterMining/" % BASE
+EXPERIMENTS_FOLDER = BASE + '/Experiments'
+MAPPING_PATH = "%s/TwitterDataAnalysis/mappings" % BASE
+
+
+# Credentials
+CREDENTIAL_FILE = '%s/private_credentials/sql_local_credentials.xml' % BASE
+SLACK_CREDENTIAL_FILE = "%s/private_credentials/slack-credentials.xml" % BASE
+
 
 # Logging folder paths
 LOG_FOLDER_PATH = "%s/Desktop/TwitterDataAnalysisLogs" % ROOT
@@ -79,20 +85,11 @@ MASTER_DB = '%s/master.db' % LOG_FOLDER_PATH
 DATA_FOLDER = "%s/private_data" % BASE
 USER_DB_MASTER = '%s/user-databases/users-master.db' % DATA_FOLDER
 USER_DB_NO_STOP = '%s/user-databases/users-no-stop.db' % DATA_FOLDER
+TWEET_DB_MASTER = '%s/tweet-databases/tweets-master.db' % DATA_FOLDER
+TWEET_DB_NO_STOP= '%s/tweet-databases/tweets-no-stop.db' % DATA_FOLDER
 
 MAX_DB_FILES = 10  # the maximum number of db files to create.
 
-
-def sqlite_file_connection_string_generator( folder_path=DB_FOLDER, max_files=MAX_DB_FILES ):
-    cnt = 1
-    while True:
-        file = '%s/wordmapping%s.db' % (folder_path, cnt)
-        yield file
-        # yield 'sqlite:////%s' % file
-        if cnt < max_files:
-            cnt += 1
-        else:
-            cnt = 1
 
 
 ################################# Database ############################
@@ -106,9 +103,9 @@ ENGINE = 'sqlite-file'
 
 # The name of the database to connect to
 if TEST:
-    DB = 'twitter_wordsTEST' if ITEM_TYPE == 'user' else 'twitter_dataTEST'
+    DB = 'twitter_dataTEST' if ITEM_TYPE == 'user' else 'twitter_dataTEST'
 else:
-    DB = 'twitter_users' if ITEM_TYPE == 'user' else 'twitter_data'
+    DB = 'twitter_data' if ITEM_TYPE == 'user' else 'twitter_data'
 
 
 # Sometimes things go wrong in develoment and

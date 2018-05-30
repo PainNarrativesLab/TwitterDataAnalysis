@@ -30,6 +30,18 @@ class QHelper( object ):
         self.batch_size = batch_size
         self.store = deque()
         self.file_path = file_path
+        self.user_query = """
+        INSERT INTO word_map 
+          (word, sentence_index, word_index, user_id) 
+        VALUES (?, ?, ?, ?)
+        """
+        self.tweet_query = """
+        INSERT INTO word_map 
+          (word, sentence_index, word_index, tweet_id) 
+        VALUES (?, ?, ?, ?)
+        """
+        #use the environent to set which query we use
+        self.query = self.tweet_query if environment.ITEM_TYPE == 'tweet' else self.user_query
 
     def increment_query_count( self ):
         # increment the notification spinner
@@ -75,9 +87,7 @@ class QHelper( object ):
                 with conn:
                     rs = [ self.store.pop() for i in range( 0, len( self.store ) ) ]
 
-                    userQuery = """INSERT INTO word_map (word, sentence_index, word_index, user_id) 
-                        VALUES (?, ?, ?, ?)"""
-                    conn.executemany( userQuery, rs )
+                    conn.executemany( self.query, rs )
 
             except Exception as e:
                 print( "error for file %s : %s" % (self.file_path, e) )
