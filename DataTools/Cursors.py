@@ -5,8 +5,11 @@ __author__ = 'adam'
 
 import threading
 
+
+import environment
+
 # Load cursor for tweet ids
-import TweetORM
+from DataTools import TweetORM
 from DataTools import DataConnections
 from environment import *
 

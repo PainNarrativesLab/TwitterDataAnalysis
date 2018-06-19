@@ -9,6 +9,11 @@ import sqlite3
 import environment
 
 
+def attach_id_map(connection):
+    query = """ATTACH DATABASE '%s' as id_map;""" % (environment.ID_MAP_DB)
+    connection.execute(query)
+
+
 def get_adjacent_word_counts( word: str, offset: int, cutoff: int = None, db: str = environment.USER_DB_NO_STOP ):
     """Returns a list of tuples containing counts of the words which
     are in the offset position relative to the string.
@@ -149,15 +154,34 @@ def get_user_ids_for_word( word, db=environment.USER_DB_NO_STOP ):
 def get_tweet_ids_for_word( word, db=environment.TWEET_DB_MASTER):
     """Returns the ids of tweets containing  the word """
     query = """
-          SELECT m.tweet_id, m.word_index, m.sentence_index
-          FROM word_map m
-          WHERE m.word=?
-    """
+              SELECT m.tweet_id, m.word_index, m.sentence_index
+              FROM word_map m
+              WHERE m.word=?
+        """
     conn = sqlite3.connect( db )
     s = (word,)
     r = conn.execute( query, s )
     return r.fetchall()
     conn.close()
+
+# query = """
+#           SELECT m.tweet_id, idm.user_id, m.word_index, m.sentence_index
+#           FROM word_map m
+#           JOIN idm
+#           ON(m.tweet_id = idm.tweet_id)
+#           WHERE m.word=?
+#     """
+#     conn = sqlite3.connect( db )
+#     with conn:
+#         curs = conn.cursor()  # Attach cursor
+#         query0 = """ATTACH DATABASE %s as idm ;""" % environment.ID_MAP_DB
+#         curs.execute(query0)
+#
+#         # attach_id_map(conn)
+#         s = (word,)
+#         r = curs.execute( query, s )
+#         return r.fetchall()
+
 
 if __name__ == '__main__':
     pass

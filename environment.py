@@ -8,15 +8,15 @@ import sys
 
 ############################## Global control variables ###############
 # Whether this is a test
-TEST = True
-# TEST = False
+# TEST = True
+TEST = False
 
 # ITEM_TYPE = 'user'
 ITEM_TYPE = 'tweet'
 
 # How many users or tweets to process
-LIMIT = None
-LIMIT = 10000
+# LIMIT = None
+LIMIT = 1000
 
 
 ############ Whether to log
@@ -26,7 +26,7 @@ INTEGRITY_LOGGING = False
 # Record a timestamp for various stages for use in tuning
 TIME_LOGGING = False
 # Whether to send result to Slack webhook
-SLACK_NOTIFY = True
+SLACK_NOTIFY = False
 # at what point to send an update to slack
 SLACK_HEARTBEAT_LIMIT = 1000000
 
@@ -87,9 +87,8 @@ USER_DB_MASTER = '%s/user-databases/users-master.db' % DATA_FOLDER
 USER_DB_NO_STOP = '%s/user-databases/users-no-stop.db' % DATA_FOLDER
 TWEET_DB_MASTER = '%s/tweet-databases/tweets-master.db' % DATA_FOLDER
 TWEET_DB_NO_STOP= '%s/tweet-databases/tweets-no-stop.db' % DATA_FOLDER
-
+ID_MAP_DB = '%s/id-map.db' % DATA_FOLDER
 MAX_DB_FILES = 10  # the maximum number of db files to create.
-
 
 
 ################################# Database ############################

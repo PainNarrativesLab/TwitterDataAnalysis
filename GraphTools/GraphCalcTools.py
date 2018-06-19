@@ -1,6 +1,6 @@
 #calc closeness centrality
 import shelve
-import networkx
+import networkx as nx
 
 def sorted_degree_map(degree_map):
     """

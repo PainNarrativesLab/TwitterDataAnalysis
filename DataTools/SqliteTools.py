@@ -1,4 +1,10 @@
 """
+Contains tools for initializing, deleting and otherwise
+administering sqlite databases
+
+Tools for accessing the data are in SqliteDataTools
+
+
 Created by adam on 5/15/18
 """
 __author__ = 'adam'

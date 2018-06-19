@@ -116,7 +116,7 @@ def _create_sqlite_file_engine( conn=next( file_path_generator ), echo=True ):
 
 
 def _create_mysql_engine():
-    print( "creating connection: mysql " )
+    print( "creating connection: mysql %s" % DB)
     return create_engine( 'mysql://root:''@localhost:3306/%s' % DB )
 
 
