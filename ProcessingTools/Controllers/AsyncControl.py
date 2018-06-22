@@ -7,10 +7,10 @@ import environment
 import asyncio
 
 from ProcessingTools.Queues import AsyncQueues
-from Servers.Mixins import ResponseStoreMixin
+from DatabaseServer.Servers.Mixins import ResponseStoreMixin
 from ProcessingTools.Processors.UserProcessing import Processor
 
-from Loggers.SlackNotifications import slack_heartbeat
+from CommonTools.Loggers import slack_heartbeat
 
 
 class Control( ResponseStoreMixin ):

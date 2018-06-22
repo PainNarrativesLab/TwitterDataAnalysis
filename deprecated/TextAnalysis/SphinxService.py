@@ -185,7 +185,7 @@ class SphinxSearch(SphinxClient, IOMService):
             #self.sel = mysql_select_db(self.searchDB) or die(mysql_error());
             for idnum in self.resultIDs:
                 self.query = "SELECT quoteID, quoteText FROM testimony_all WHERE quoteID = %s"
-                #self.query = "SELECT * FROM %%s WHERE %%s = %idnum" % (self.table_to_search, self.table_search_prim_key)
+                #self.word_map_table_creation_query = "SELECT * FROM %%s WHERE %%s = %idnum" % (self.table_to_search, self.table_search_prim_key)
                 self.val = [idnum]
                 self.returnAll()
                 self.result_content.append(self.results[0])
@@ -249,7 +249,7 @@ class SphinxSearch(SphinxClient, IOMService):
                 self.executeQuery()
 
             #		/* This is a serious hack. The excerpt array doesn't hold the quoteID. So I'm relying on the
-            #		array having the same order as the results array and stepping through it with the update query.
+            #		array having the same order as the results array and stepping through it with the update word_map_table_creation_query.
         i = 0;
         for idnum in self.resultIDs:
             self.query = "UPDATE quotes_masked SET quoteID = %s WHERE questionNumber = %s"

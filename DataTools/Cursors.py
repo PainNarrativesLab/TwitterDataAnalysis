@@ -105,11 +105,11 @@ class TweetCursor(Cursor):
             yield t
 
         # print( "_create_tweet_iterator" )
-        # for t in self.dao.session.query(DataTools.TweetORM.Tweet).limit(self.limit).all():
+        # for t in self.dao.session.word_map_table_creation_query(DataTools.TweetORM.Tweet).limit(self.limit).all():
         #     yield t
         #
         # else:
-        #     for t in self.dao.session.query(DataTools.TweetORM.Tweet).all():
+        #     for t in self.dao.session.word_map_table_creation_query(DataTools.TweetORM.Tweet).all():
         #         yield t
 
     def next_tweet(self):

@@ -2,7 +2,7 @@ import unittest
 
 from DataTools.DataStructures import Result
 from Factories import UserResultFactory, TweetResultFactory
-from Servers.Helpers import *
+from DatabaseServer.Servers.Helpers import *
 
 
 class PayloadHelpers( unittest.TestCase ):

@@ -1,7 +1,7 @@
 """
 Created by adam on 3/27/18
 """
-from Servers.Errors import DBExceptions
+from DatabaseServer.Servers.Errors import DBExceptions
 
 __author__ = 'adam'
 
@@ -17,7 +17,7 @@ import Helpers
 
 import time
 # from Loggers.FileLoggers import FileWritingLogger
-from Loggers.CsvLoggers import log_query, log_query_timestamp
+from CommonTools.Loggers import log_query, log_query_timestamp
 from DataConnections import session_scope
 import environment
 

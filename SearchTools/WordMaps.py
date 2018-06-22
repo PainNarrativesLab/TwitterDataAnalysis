@@ -164,7 +164,7 @@ def get_tweet_ids_for_word( word, db=environment.TWEET_DB_MASTER):
     return r.fetchall()
     conn.close()
 
-# query = """
+# word_map_table_creation_query = """
 #           SELECT m.tweet_id, idm.user_id, m.word_index, m.sentence_index
 #           FROM word_map m
 #           JOIN idm
@@ -179,7 +179,7 @@ def get_tweet_ids_for_word( word, db=environment.TWEET_DB_MASTER):
 #
 #         # attach_id_map(conn)
 #         s = (word,)
-#         r = curs.execute( query, s )
+#         r = curs.execute( word_map_table_creation_query, s )
 #         return r.fetchall()
 
 

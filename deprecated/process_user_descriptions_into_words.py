@@ -9,9 +9,9 @@ def main():
     import time
 
     import DataTools.Cursors
-    from Loggers.FileLoggers import FileWritingLogger
+    from CommonTools.Loggers import FileWritingLogger
     from deprecated.ProcessingControllers import UserProcessingController, IProcessingController
-    from Servers.ClientSide import ServerQueueDropin
+    from DatabaseServer.Servers import ServerQueueDropin
     from TextTools.Filtration.Filters import URLFilter, UsernameFilter, PunctuationFilter, NumeralFilter, StopwordFilter
     from TextTools.Replacement.Modifiers import WierdBPrefixConverter, CaseConverter
     from TextTools.Processors.SingleWordProcessors import SingleWordProcessor

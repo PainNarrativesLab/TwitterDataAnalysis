@@ -6,7 +6,7 @@ __author__ = 'adam'
 import xml.etree.ElementTree as ET
 from contextlib import contextmanager
 
-import MySQLdb
+# import MySQLdb
 import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -117,16 +117,16 @@ def _create_sqlite_file_engine( conn=next( file_path_generator ), echo=True ):
 
 def _create_mysql_engine():
     print( "creating connection: mysql %s" % DB)
-    return create_engine( 'mysql://root:''@localhost:3306/%s' % DB )
+    return create_engine( 'mysql+mysqlconnector://root:''@localhost:3306/%s' % DB )
 
 
 def _create_mysql_test_engine():
     print( "creating connection: mysql %s" % DB )
     if DB is 'twitter_wordsTEST':
         print( "creating connection: mysql twitter_wordsTEST " )
-        return create_engine( 'mysql://root:''@localhost:3306/twitter_wordsTEST' )
+        return create_engine( 'mysql+mysqlconnector://root:''@localhost:3306/twitter_wordsTEST' )
 
-    return create_engine( "mysql://root:''@localhost:3306/%s" % DB )
+    return create_engine( "mysql+mysqlconnector://root:''@localhost:3306/%s" % DB )
 
     # return create_engine("mysql+mysqlconnector://root:@localhost/)
 
@@ -193,8 +193,8 @@ class NonOrmMySqlConnection( Connection ):
             server = "%s:%s" % (self._server, self._port)
         else:
             server = self._server
-        self.engine = MySQLdb.connect( server, self._username, self._password, self._db_name,
-                                       cursorclass=MySQLdb.cursors.DictCursor )
+        # self.engine = MySQLdb.connect( server, self._username, self._password, self._db_name,
+        #                                cursorclass=MySQLdb.cursors.DictCursor )
 
 
 class MySqlConnection( Connection ):

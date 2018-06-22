@@ -10,16 +10,12 @@ if __name__ == '__main__':
     import sys
     import aiohttp
 
-
-    import ipyparallel as ipp
     ROOT = os.getenv( "HOME" )
     BASE = '%s/Dropbox/PainNarrativesLab' % ROOT
     sys.path.append( "%s/TwitterDataAnalysis" % ROOT )
 
-    import environment
     # /Users/adam/Dropbox/PainNarrativesLab/TwitterDataAnalysis/
-    import Servers.ServerControlCommander as Commander
-    import Servers.DatabaseServer as DSG
+    from DatabaseServer import Servers as Commander, Servers as DSG
     from Executables import process_user_descriptions_into_words2 as Runner
 
     def run1():

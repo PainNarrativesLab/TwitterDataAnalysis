@@ -41,7 +41,7 @@ class NonAutocommittingBaseDAO:
 
     def executeQuery( self, query, val ):
         """
-        Prepares and executes the query stored in self.query with the variables in self.val
+        Prepares and executes the word_map_table_creation_query stored in self.word_map_table_creation_query with the variables in self.val
         Usually used for insert, update, and other functions which don't require a return
         """
         if type( val ) is not tuple:
@@ -57,7 +57,7 @@ class NonAutocommittingBaseDAO:
 
     def returnOne( self, query, val ):
         """
-        Executes the query stored in self.query with the vals in self.val.
+        Executes the word_map_table_creation_query stored in self.word_map_table_creation_query with the vals in self.val.
         Returns the first row in an array called self.results
         """
         try:
@@ -71,7 +71,7 @@ class NonAutocommittingBaseDAO:
 
     def returnAll( self, query, val ):
         """
-        Executes the query stored in self.query with the vals in self.val.
+        Executes the word_map_table_creation_query stored in self.word_map_table_creation_query with the vals in self.val.
         Return the results in an array called self.results
         """
         try:

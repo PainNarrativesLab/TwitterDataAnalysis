@@ -35,7 +35,8 @@ ROOT = os.getenv( "HOME" )
 BASE = '%s/Dropbox/PainNarrativesLab' % ROOT
 
 # Project folder paths
-PROJ_BASE = "%s/TwitterDataAnalysis" % ROOT
+PROJ_BASE = "%s/TwitterDataAnalysis" % BASE
+COMMON_TOOLS_PATH = "%s/CommonTools" % BASE
 TEXT_TOOLS_PATH = "%s/TextTools/" % BASE
 TWITTER_MINING_PATH = "%s/TwitterMining/" % BASE
 EXPERIMENTS_FOLDER = BASE + '/Experiments'
@@ -53,8 +54,11 @@ PROFILING_LOG_FOLDER_PATH = "%s/profiling" % LOG_FOLDER_PATH
 INTEGRITY_LOG_FOLDER_PATH = "%s/integrity" % LOG_FOLDER_PATH
 
 # add everyone to path explicitly
+sys.path.append(BASE)
 sys.path.append( PROJ_BASE )
 sys.path.append( TEXT_TOOLS_PATH )
+sys.path.append(COMMON_TOOLS_PATH)
+
 sys.path.append( "%s/DataTools" % PROJ_BASE )
 sys.path.append( "%s/Executables" % PROJ_BASE )
 sys.path.append( "%s/Loggers" % PROJ_BASE )

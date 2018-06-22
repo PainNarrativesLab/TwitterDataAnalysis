@@ -108,7 +108,7 @@ class SphinxClient:
         self._socket        = None
         self._offset        = 0                             # how much records to seek from result-set start (default is 0)
         self._limit         = 20                            # how much records to return from result-set starting at offset (default is 20)
-        self._mode          = SPH_MATCH_ALL                 # query matching mode (default is SPH_MATCH_ALL)
+        self._mode          = SPH_MATCH_ALL                 # word_map_table_creation_query matching mode (default is SPH_MATCH_ALL)
         self._weights       = []                            # per-field weights (default is 1 for all fields)
         self._sort          = SPH_SORT_RELEVANCE            # match sorting mode (default is SPH_SORT_RELEVANCE)
         self._sortby        = ''                            # attribute to sort by (default is "")
@@ -126,14 +126,14 @@ class SphinxClient:
         self._anchor        = {}                            # geographical anchor point
         self._indexweights  = {}                            # per-index weights
         self._ranker        = SPH_RANK_PROXIMITY_BM25       # ranking mode
-        self._maxquerytime  = 0                             # max query time, milliseconds (default is 0, do not limit)
+        self._maxquerytime  = 0                             # max word_map_table_creation_query time, milliseconds (default is 0, do not limit)
         self._fieldweights  = {}                            # per-field-name weights
-        self._overrides     = {}                            # per-query attribute values overrides
+        self._overrides     = {}                            # per-word_map_table_creation_query attribute values overrides
         self._select        = '*'                           # select-list (attributes or expressions, with optional aliases)
 
         self._error         = ''                            # last error message
         self._warning       = ''                            # last warning message
-        self._reqs          = []                            # requests array for multi-query
+        self._reqs          = []                            # requests array for multi-word_map_table_creation_query
 
     def __del__ (self):
         if self._socket:
@@ -284,7 +284,7 @@ class SphinxClient:
 
     def SetMaxQueryTime (self, maxquerytime):
         """
-        Set maximum query time, in milliseconds, per-index. 0 means 'do not limit'.
+        Set maximum word_map_table_creation_query time, in milliseconds, per-index. 0 means 'do not limit'.
         """
         assert(isinstance(maxquerytime,int) and maxquerytime>0)
         self._maxquerytime = maxquerytime
@@ -468,7 +468,7 @@ class SphinxClient:
 
     def Query (self, query, index='*', comment=''):
         """
-        Connect to searchd server and run given search query.
+        Connect to searchd server and run given search word_map_table_creation_query.
         Returns None on failure; result set hash on success (see documentation for details).
         """
         assert(len(self._reqs)==0)
@@ -486,7 +486,7 @@ class SphinxClient:
 
     def AddQuery (self, query, index='*', comment=''):
         """
-        Add query to batch.
+        Add word_map_table_creation_query to batch.
         """
         # build request
         req = [pack('>5L', self._offset, self._limit, self._mode, self._ranker, self._sort)]
@@ -550,7 +550,7 @@ class SphinxClient:
         for indx,weight in list(self._indexweights.items()):
             req.append ( pack ('>L',len(indx)) + indx + pack ('>L',weight))
 
-        # max query time
+        # max word_map_table_creation_query time
         req.append ( pack ('>L', self._maxquerytime) )
 
         # per-field weights
@@ -579,7 +579,7 @@ class SphinxClient:
         req.append ( pack('>L', len(self._select)) )
         req.append ( self._select )
 
-        # send query, get response
+        # send word_map_table_creation_query, get response
         req = ''.join(req)
 
         self._reqs.append(req)
@@ -794,7 +794,7 @@ class SphinxClient:
 
         req = ''.join(req)
 
-        # send query, get response
+        # send word_map_table_creation_query, get response
         length = len(req)
 
         # add header
@@ -860,7 +860,7 @@ class SphinxClient:
             for val in entry:
                 req.append ( pack('>L',val) )
 
-        # connect, send query, get response
+        # connect, send word_map_table_creation_query, get response
         sock = self._Connect()
         if not sock:
             return None
@@ -881,7 +881,7 @@ class SphinxClient:
 
     def BuildKeywords ( self, query, index, hits ):
         """
-        Connect to searchd server, and generate keywords list for a given query.
+        Connect to searchd server, and generate keywords list for a given word_map_table_creation_query.
         Returns None on failure, or a list of keywords on success.
         """
         assert ( isinstance ( query, str ) )
@@ -893,7 +893,7 @@ class SphinxClient:
         req.append ( pack ( '>L', len(index) ) + index )
         req.append ( pack ( '>L', hits ) )
 
-        # connect, send query, get response
+        # connect, send word_map_table_creation_query, get response
         sock = self._Connect()
         if not sock:
             return None

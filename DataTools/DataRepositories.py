@@ -98,7 +98,7 @@ class WordRepository( IRepository, ISessionHaver ):
         self._is_valid( result )
         assert (type( word ) is Word)
         # try loading in case already recorded
-        # wordMap = self.session.query(WordMapping).filter(
+        # wordMap = self.session.word_map_table_creation_query(WordMapping).filter(
         #     WordMapping.tweet_id == result.tweet_id and
         #     WordMapping.sentence_index == result.sentence_index and
         #     WordMapping.word_index == result.word_index

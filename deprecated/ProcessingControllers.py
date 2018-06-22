@@ -20,10 +20,10 @@ import TweetORM
 import environment
 from DataTools.DataStructures import make_tweet_result, make_user_result
 from Queues.Interfaces import IQueueHandler
-from Servers.Mixins import ResponseStoreMixin
+from DatabaseServer.Servers.Mixins import ResponseStoreMixin
 from TextProcessors import Tokenizers
 # instrumenting to determine if running async
-from profiling.OptimizingTools import timestamp_writer
+from profiling import timestamp_writer
 
 import Utilities
 

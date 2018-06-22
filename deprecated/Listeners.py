@@ -9,7 +9,7 @@ __author__ = 'adam'
 import DataTools.DataRepositories
 
 import deprecated.Workers as Workers
-import Loggers.FileLoggers as Loggers
+from CommonTools import Loggers as Loggers
 from environment import *
 
 

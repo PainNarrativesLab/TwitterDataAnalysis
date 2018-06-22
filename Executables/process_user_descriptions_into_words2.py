@@ -6,10 +6,10 @@ __author__ = 'adam'
 import asyncio
 import environment
 
-from profiling.OptimizingTools import log_start_stop
-from Servers.ClientSide import Client
+from profiling import log_start_stop
+from DatabaseServer.Servers import Client
 from DataTools.SqliteTools import initialize_master_db, delete_master_db
-from Loggers.Helpers import delete_files
+from CommonTools.Loggers import delete_files
 
 
 async def run(future):

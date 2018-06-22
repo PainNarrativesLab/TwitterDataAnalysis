@@ -13,10 +13,10 @@ import os
 import sqlite3
 
 import environment
-from Loggers.Helpers import delete_files
+from CommonTools.Loggers import delete_files
 
 
-query = """CREATE TABLE `word_map` (
+word_map_table_creation_query = """CREATE TABLE `word_map` (
 `tweet_id` int(20) DEFAULT NULL,
   `user_id` int(20) DEFAULT NULL,
   `word` varchar(200) DEFAULT NULL,
@@ -31,7 +31,7 @@ def initialize_working_tables():
         try:
             f = '%s/wordmapping%s.db' % (environment.DB_FOLDER, i)
             conn = sqlite3.connect( f )
-            conn.execute( query )
+            conn.execute( word_map_table_creation_query )
             conn.commit()
             conn.close()
         except:
@@ -42,7 +42,7 @@ def initialize_word_map_db(filepath):
     try:
         conn = sqlite3.connect( filepath )
         with conn:
-            conn.execute( query )
+            conn.execute( word_map_table_creation_query )
             conn.commit()
             conn.close()
     except:
